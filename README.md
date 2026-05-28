@@ -1,7 +1,7 @@
 # VibeCodeGuide: Security and Privacy Analyzer for AI-Generated Code
 
-> ASE 2026 — Paris Lodron University of Salzburg  
-> **Authors:** Haylemicheal Mekonnen, Eslam Younis, Elbetel Reta
+> Privacy Engineering 2026 — Paris Lodron University of Salzburg  
+> **Authors:** Haylemicheal Mekonnen, Daniel
 
 VibeCodeGuide helps teams review **vibe-coded** Python before it ships. It statically analyzes source for **security vulnerabilities** and **privacy risks**—unsafe execution, secrets, weak crypto, insecure APIs, sensitive data handling, and related issues common in AI-generated code.
 
@@ -145,31 +145,31 @@ vibecodeguide scan ./project --output report.txt
 
 ### Exit codes
 
-| Code | Meaning |
-|------|---------|
+| Code | Meaning                                               |
+| ---- | ----------------------------------------------------- |
 | `0`  | Scan completed — no findings above selected threshold |
-| `1`  | Scan completed — findings detected |
-| `2`  | Operational error or invalid usage |
+| `1`  | Scan completed — findings detected                    |
+| `2`  | Operational error or invalid usage                    |
 
 ---
 
 ## Implemented Rules
 
-| Rule ID | Title | Severity | Focus |
-|---------|-------|----------|--------|
-| VG001 | Use of `eval()` | CRITICAL | Security |
-| VG002 | Use of `exec()` | CRITICAL | Security |
-| VG003 | Hardcoded Secret | HIGH | Security / Privacy |
-| VG004 | Insecure Randomness | MEDIUM | Security |
-| VG005 | Dangerous Subprocess Usage (`shell=True`) | HIGH | Security |
-| VG006 | Pickle Deserialization | HIGH | Security |
-| VG007 | Assert Used for Security Check | MEDIUM | Security |
-| VG008 | Weak Hash Algorithm | HIGH | Security |
-| VG009 | OS Shell Execution | HIGH | Security |
-| VG010 | Unsafe YAML Deserialization | HIGH | Security |
-| VG011 | TLS Verification Disabled | HIGH | Security |
-| VG012 | Debug Mode Enabled | MEDIUM | Security |
-| VG013 | Dynamic SQL Query Construction | HIGH | Security |
+| Rule ID | Title                                     | Severity | Focus              |
+| ------- | ----------------------------------------- | -------- | ------------------ |
+| VG001   | Use of `eval()`                           | CRITICAL | Security           |
+| VG002   | Use of `exec()`                           | CRITICAL | Security           |
+| VG003   | Hardcoded Secret                          | HIGH     | Security / Privacy |
+| VG004   | Insecure Randomness                       | MEDIUM   | Security           |
+| VG005   | Dangerous Subprocess Usage (`shell=True`) | HIGH     | Security           |
+| VG006   | Pickle Deserialization                    | HIGH     | Security           |
+| VG007   | Assert Used for Security Check            | MEDIUM   | Security           |
+| VG008   | Weak Hash Algorithm                       | HIGH     | Security           |
+| VG009   | OS Shell Execution                        | HIGH     | Security           |
+| VG010   | Unsafe YAML Deserialization               | HIGH     | Security           |
+| VG011   | TLS Verification Disabled                 | HIGH     | Security           |
+| VG012   | Debug Mode Enabled                        | MEDIUM   | Security           |
+| VG013   | Dynamic SQL Query Construction            | HIGH     | Security           |
 
 Findings may include confidence, risk score, CWE, OWASP category, impact, and remediation text.
 
@@ -279,8 +279,7 @@ Keep the API running on port 8000 while using the extension. Use **VibeCodeGuide
 
 ## Team
 
-| Name | Institution |
-|---|---|
+| Name                  | Institution                         |
+| --------------------- | ----------------------------------- |
 | Haylemicheal Mekonnen | Paris Lodron University of Salzburg |
-| Eslam Younis | Paris Lodron University of Salzburg |
-| Elbetel Reta | Paris Lodron University of Salzburg |
+| Daniel Wassie         | Paris Lodron University of Salzburg |
