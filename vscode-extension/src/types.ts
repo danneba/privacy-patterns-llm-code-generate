@@ -1,0 +1,39 @@
+export type Severity = "INFO" | "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
+
+export interface Finding {
+  rule_id: string;
+  title: string;
+  message: string;
+  severity: Severity;
+  file: string;
+  line: number;
+  category?: string;
+  snippet?: string | null;
+  confidence?: "LOW" | "MEDIUM" | "HIGH" | null;
+  risk_score?: number | null;
+  cwe?: string | null;
+  owasp?: string | null;
+  impact?: string | null;
+  suggestion?: string | null;
+}
+
+export interface ParseError {
+  file: string;
+  message: string;
+}
+
+export interface AnalyzeResponse {
+  ok: boolean;
+  error_type?: string | null;
+  error_message?: string | null;
+  scanned_files: number;
+  findings: Finding[];
+  parse_errors: ParseError[];
+  summary: Record<string, number | Record<string, number>>;
+}
+
+export interface VibeCodeGuideConfig {
+  securityApiUrl: string;
+  minSeverity: Severity;
+  requestTimeoutMs: number;
+}

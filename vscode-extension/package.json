@@ -1,0 +1,103 @@
+{
+  "name": "vibecodeguide",
+  "displayName": "VibeCodeGuide",
+  "description": "Security and privacy analysis for Python via the VibeCodeGuide analyzer API.",
+  "version": "0.1.0",
+  "publisher": "vibecodeguide",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Linters",
+    "Other"
+  ],
+  "activationEvents": [
+    "onLanguage:python"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "vibecodeguide.analyze",
+        "title": "VibeCodeGuide: Analyze File",
+        "icon": "$(shield)"
+      },
+      {
+        "command": "vibecodeguide.analyzeSelection",
+        "title": "VibeCodeGuide: Analyze Selection",
+        "icon": "$(selection)"
+      },
+      {
+        "command": "vibecodeguide.checkHealth",
+        "title": "VibeCodeGuide: Check API Health",
+        "icon": "$(heart)"
+      }
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "command": "vibecodeguide.analyze",
+          "when": "editorLangId == python",
+          "group": "vibecodeguide@1"
+        },
+        {
+          "command": "vibecodeguide.analyzeSelection",
+          "when": "editorLangId == python && editorHasSelection",
+          "group": "vibecodeguide@2"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "vibecodeguide.analyze",
+          "when": "editorLangId == python"
+        },
+        {
+          "command": "vibecodeguide.analyzeSelection",
+          "when": "editorLangId == python"
+        },
+        {
+          "command": "vibecodeguide.checkHealth"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "VibeCodeGuide",
+      "properties": {
+        "vibecodeguide.securityApiUrl": {
+          "type": "string",
+          "default": "http://127.0.0.1:8000",
+          "description": "Base URL for the VibeCodeGuide security and privacy analyzer API."
+        },
+        "vibecodeguide.minSeverity": {
+          "type": "string",
+          "enum": [
+            "INFO",
+            "LOW",
+            "MEDIUM",
+            "HIGH",
+            "CRITICAL"
+          ],
+          "default": "LOW",
+          "description": "Minimum severity reported from the analyzer."
+        },
+        "vibecodeguide.requestTimeoutMs": {
+          "type": "number",
+          "default": 60000,
+          "minimum": 5000,
+          "description": "HTTP request timeout in milliseconds."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "package": "npm run compile && npx @vscode/vsce@2.32.0 package --no-dependencies --allow-missing-repository"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "@types/vscode": "^1.85.0",
+    "typescript": "^5.3.3"
+  }
+}
