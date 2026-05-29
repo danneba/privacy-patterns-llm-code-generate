@@ -79,13 +79,13 @@ VibeCodeGuide is in an **early but working** stage.
 **Available now:**
 
 - Static **security** rules (VG001–VG013) for Python
-- **Privacy-oriented** checks via the same engine (e.g. hardcoded secrets, unsafe data handling patterns)
+- **Privacy** rule pack (PG001–PG008) mapped to Hoepman privacy design strategies
+- `PRIVACY` finding category in CLI/JSON reports with strategy metadata
 - CLI (`vibecodeguide scan`), REST API (`security.api`), and VS Code extension
 - Benchmark dataset for measuring detection quality
 
 **Planned:**
 
-- Dedicated privacy rule pack and `PRIVACY` finding category in reports
 - Broader language and framework coverage
 - CI templates and policy gates
 
@@ -171,7 +171,20 @@ vibecodeguide scan ./project --output report.txt
 | VG012   | Debug Mode Enabled                        | MEDIUM   | Security           |
 | VG013   | Dynamic SQL Query Construction            | HIGH     | Security           |
 
-Findings may include confidence, risk score, CWE, OWASP category, impact, and remediation text.
+### Privacy rules (Hoepman strategies)
+
+| Rule ID | Title | Severity | Strategy |
+| ------- | ----- | -------- | -------- |
+| PG001 | PII in Logs or Print Output | HIGH | MINIMIZE |
+| PG002 | Plaintext Sensitive Data Storage | HIGH | HIDE |
+| PG003 | PII Sent to Third-Party Service | HIGH | SEPARATE |
+| PG004 | Identifiable Data in Analytics Event | MEDIUM | AGGREGATE |
+| PG005 | PII Processing Without Consent Handling | MEDIUM | INFORM |
+| PG006 | Outbound Communication Without Opt-Out Check | MEDIUM | CONTROL |
+| PG007 | Sensitive Data Access Without Auth Guard | HIGH | ENFORCE |
+| PG008 | Sensitive Data Change Without Audit Trail | MEDIUM | DEMONSTRATE |
+
+Findings may include confidence, risk score, CWE, OWASP category, privacy strategy, impact, and remediation text.
 
 ### Suppressing intentional findings
 
@@ -205,14 +218,17 @@ Scanned 4 file(s). Found 3 issue(s): 2 high, 1 medium, 0 low.
 ## Project Structure
 
 ```
-generated-code-analyzer/
-├── security/              Security & privacy analyzer (Python package)
+privacy-patterns-llm-code-generate/
+├── security/              Security, smell, and performance analyzer core
 │   ├── api/               FastAPI service for editor/HTTP clients
 │   ├── cli/               vibecodeguide CLI
 │   ├── core/              Scanner orchestration
 │   ├── rules/security/    Rule implementations VG001–VG013
 │   ├── models/            Finding and scan result types
 │   └── reporters/         Text and JSON formatters
+├── privacy/               Privacy rule pack (PG001–PG008, Hoepman strategies)
+│   ├── analyzers/         PrivacyAnalyzer
+│   └── rules/             Privacy rule implementations
 ├── vscode-extension/      VibeCodeGuide VS Code / Cursor extension
 ├── samples/               Vulnerable examples for demos and tests
 ├── benchmarks/            Labeled samples for evaluation
@@ -256,7 +272,7 @@ Open `vscode-extension/` in VS Code, press **F5**, then on a Python file use:
 - **VibeCodeGuide: Analyze Selection**
 - **VibeCodeGuide: Check API Health**
 
-Findings appear in **Problems**; full text reports in the **VibeCodeGuide** output channel.
+Findings appear in **Problems** (security and privacy, with Hoepman strategy labels on privacy issues); full reports in the **VibeCodeGuide** output channel include privacy score and per-category counts.
 
 Settings: **VibeCodeGuide** (`vibecodeguide.securityApiUrl`, `vibecodeguide.minSeverity`, `vibecodeguide.requestTimeoutMs`).
 

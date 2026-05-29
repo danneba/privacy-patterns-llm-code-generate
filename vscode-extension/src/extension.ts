@@ -2,7 +2,7 @@ import * as vscode from "vscode";
 import { analyzeCode, ApiError, checkHealth } from "./client";
 import { getConfig } from "./config";
 import { VibeCodeGuideDiagnostics } from "./diagnostics";
-import { formatAnalyzeSummary } from "./report";
+import { countFindingsByCategory, formatAnalyzeSummary } from "./report";
 
 const EXTENSION_NAME = "VibeCodeGuide";
 const OUTPUT_CHANNEL = EXTENSION_NAME;
@@ -66,18 +66,28 @@ export function activate(context: vscode.ExtensionContext): void {
           output.appendLine(formatAnalyzeSummary(analyzeResult));
           output.show(true);
 
-          const issueCount = analyzeResult.findings.length;
+          const counts = countFindingsByCategory(analyzeResult);
           if (analyzeResult.parse_errors.length > 0) {
             vscode.window.showWarningMessage(
               `${EXTENSION_NAME}: parse error — see Problems panel.`,
             );
-          } else if (issueCount === 0) {
+          } else if (counts.total === 0) {
             vscode.window.showInformationMessage(
               `${EXTENSION_NAME}: no security or privacy issues found.`,
             );
           } else {
+            const parts: string[] = [];
+            if (counts.security > 0) {
+              parts.push(`${counts.security} security`);
+            }
+            if (counts.privacy > 0) {
+              parts.push(`${counts.privacy} privacy`);
+            }
+            if (counts.other > 0) {
+              parts.push(`${counts.other} other`);
+            }
             vscode.window.showWarningMessage(
-              `${EXTENSION_NAME}: ${issueCount} issue(s) found — see Problems panel.`,
+              `${EXTENSION_NAME}: ${counts.total} issue(s) (${parts.join(", ")}) — see Problems panel.`,
             );
           }
         } catch (err) {

@@ -11,6 +11,7 @@ class Confidence(str, Enum):
 
 class Category(str, Enum):
     SECURITY = "SECURITY"
+    PRIVACY = "PRIVACY"
     CODE_SMELL = "CODE_SMELL"
     PERFORMANCE = "PERFORMANCE"
 
@@ -53,6 +54,7 @@ class Finding:
     cwe: Optional[str] = None
     owasp: Optional[str] = None
     impact: Optional[str] = None
+    privacy_strategy: Optional[str] = None
 
     def to_dict(self) -> dict:
         return {
@@ -71,6 +73,7 @@ class Finding:
             "cwe": self.cwe,
             "owasp": self.owasp,
             "impact": self.impact,
+            "privacy_strategy": self.privacy_strategy,
         }
 
 
@@ -110,28 +113,46 @@ class ScanResult:
         }
 
     def risk_summary(self) -> dict:
-        scored_findings = [
-            f
-            for f in self.findings
-            if f.category == Category.SECURITY and f.risk_score is not None
+        security_findings = [
+            f for f in self.findings if f.category == Category.SECURITY and f.risk_score is not None
         ]
-        if not scored_findings:
-            return {
-                "security_score": 100,
-                "max_risk_score": 0,
-                "average_risk_score": 0,
-                "high_confidence_count": 0,
-            }
-        risk_scores = [f.risk_score for f in scored_findings if f.risk_score is not None]
-        max_risk = max(risk_scores)
-        average_risk = round(sum(risk_scores) / len(risk_scores), 1)
-        high_confidence_count = sum(1 for f in scored_findings if f.confidence == Confidence.HIGH)
-        return {
-            "security_score": max(0, 100 - max_risk),
-            "max_risk_score": max_risk,
-            "average_risk_score": average_risk,
-            "high_confidence_count": high_confidence_count,
+        privacy_findings = [
+            f for f in self.findings if f.category == Category.PRIVACY and f.risk_score is not None
+        ]
+        summary = {
+            "security_score": 100,
+            "privacy_score": 100,
+            "max_risk_score": 0,
+            "average_risk_score": 0,
+            "high_confidence_count": 0,
         }
+        if security_findings:
+            security_scores = [f.risk_score for f in security_findings if f.risk_score is not None]
+            max_security = max(security_scores)
+            summary["security_score"] = max(0, 100 - max_security)
+            summary["max_risk_score"] = max(summary["max_risk_score"], max_security)
+            summary["average_risk_score"] = round(
+                sum(security_scores) / len(security_scores), 1
+            )
+            summary["high_confidence_count"] += sum(
+                1 for f in security_findings if f.confidence == Confidence.HIGH
+            )
+        if privacy_findings:
+            privacy_scores = [f.risk_score for f in privacy_findings if f.risk_score is not None]
+            max_privacy = max(privacy_scores)
+            summary["privacy_score"] = max(0, 100 - max_privacy)
+            summary["max_risk_score"] = max(summary["max_risk_score"], max_privacy)
+            privacy_average = round(sum(privacy_scores) / len(privacy_scores), 1)
+            if security_findings:
+                summary["average_risk_score"] = round(
+                    (summary["average_risk_score"] + privacy_average) / 2, 1
+                )
+            else:
+                summary["average_risk_score"] = privacy_average
+            summary["high_confidence_count"] += sum(
+                1 for f in privacy_findings if f.confidence == Confidence.HIGH
+            )
+        return summary
 
     def to_dict(self) -> dict:
         return {

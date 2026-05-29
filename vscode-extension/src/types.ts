@@ -1,5 +1,7 @@
 export type Severity = "INFO" | "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
 
+export type FindingCategory = "SECURITY" | "PRIVACY" | "CODE_SMELL" | "PERFORMANCE";
+
 export interface Finding {
   rule_id: string;
   title: string;
@@ -7,7 +9,7 @@ export interface Finding {
   severity: Severity;
   file: string;
   line: number;
-  category?: string;
+  category?: FindingCategory | string;
   snippet?: string | null;
   confidence?: "LOW" | "MEDIUM" | "HIGH" | null;
   risk_score?: number | null;
@@ -15,11 +17,26 @@ export interface Finding {
   owasp?: string | null;
   impact?: string | null;
   suggestion?: string | null;
+  privacy_strategy?: string | null;
 }
 
 export interface ParseError {
   file: string;
   message: string;
+}
+
+export interface RiskSummary {
+  security_score: number;
+  privacy_score: number;
+  max_risk_score: number;
+  average_risk_score: number;
+  high_confidence_count: number;
+}
+
+export interface ScanSummary {
+  by_severity: Record<string, number>;
+  by_category: Record<string, number>;
+  risk?: RiskSummary;
 }
 
 export interface AnalyzeResponse {
@@ -29,7 +46,7 @@ export interface AnalyzeResponse {
   scanned_files: number;
   findings: Finding[];
   parse_errors: ParseError[];
-  summary: Record<string, number | Record<string, number>>;
+  summary: ScanSummary;
 }
 
 export interface VibeCodeGuideConfig {

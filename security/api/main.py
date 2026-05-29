@@ -28,6 +28,7 @@ class FindingModel(BaseModel):
     cwe: Optional[str] = None
     owasp: Optional[str] = None
     impact: Optional[str] = None
+    privacy_strategy: Optional[str] = None
 
 
 class ParseErrorModel(BaseModel):

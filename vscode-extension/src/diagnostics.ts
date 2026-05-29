@@ -11,6 +11,21 @@ const SEVERITY_MAP: Record<Severity, vscode.DiagnosticSeverity> = {
   CRITICAL: vscode.DiagnosticSeverity.Error,
 };
 
+function categoryPrefix(finding: Finding): string {
+  if (finding.category === "PRIVACY") {
+    return finding.privacy_strategy
+      ? `Privacy (${finding.privacy_strategy})`
+      : "Privacy";
+  }
+  if (finding.category === "SECURITY") {
+    return "Security";
+  }
+  if (finding.category) {
+    return finding.category;
+  }
+  return finding.privacy_strategy ? `Privacy (${finding.privacy_strategy})` : "Security";
+}
+
 export class VibeCodeGuideDiagnostics {
   private readonly collection = vscode.languages.createDiagnosticCollection(DIAGNOSTIC_SOURCE);
 
@@ -47,9 +62,13 @@ export class VibeCodeGuideDiagnostics {
     const lineText = document.lineAt(line).text;
     const range = new vscode.Range(line, 0, line, lineText.length);
 
-    const parts = [`[${finding.rule_id}] ${finding.title}`, finding.message];
+    const prefix = categoryPrefix(finding);
+    const parts = [`[${prefix}] [${finding.rule_id}] ${finding.title}`, finding.message];
+    if (finding.impact) {
+      parts.push(`Impact: ${finding.impact}`);
+    }
     if (finding.suggestion) {
-      parts.push(`Suggestion: ${finding.suggestion}`);
+      parts.push(`Fix: ${finding.suggestion}`);
     }
 
     const diagnostic = new vscode.Diagnostic(

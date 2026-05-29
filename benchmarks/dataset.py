@@ -386,6 +386,105 @@ def find_user(cursor, username):
 app.run(debug=True)
 """,
     ),
+
+    # ── P01: PII logging + plaintext storage (MINIMIZE, HIDE) ─────────────────
+    Sample(
+        id="P01",
+        label="PII in logs and plaintext password storage",
+        source="ai-generated",
+        description="LLM-generated onboarding flow that logs email and stores passwords in plaintext.",
+        tags=["privacy", "hoepman"],
+        expected_rules={"pii_in_logs", "plaintext_pii_storage"},
+        code="""
+import logging
+
+logger = logging.getLogger(__name__)
+
+
+def register_user(email, password):
+    logger.info("Registering user %s", email)
+    print(f"Created account for {email}")
+    stored_password = password
+    return {"email": email, "password": stored_password}
+""",
+    ),
+
+    # ── P02: Third-party + analytics + consent (SEPARATE, AGGREGATE, INFORM) ─
+    Sample(
+        id="P02",
+        label="PII to third parties without consent handling",
+        source="ai-generated",
+        description="Typical AI analytics integration leaking identifiers and skipping consent checks.",
+        tags=["privacy", "hoepman", "web"],
+        expected_rules={
+            "pii_to_third_party",
+            "raw_id_in_analytics",
+            "pii_without_consent",
+        },
+        code="""
+import requests
+
+
+def sync_user(email, user_id, profile):
+    requests.post("https://partner.example.com/sync", json={"email": email, "profile": profile})
+    analytics.track("login", {"email": email, "user_id": user_id})
+
+
+def save_profile(email, phone, address):
+    database.insert(email=email, phone=phone, address=address)
+
+
+class analytics:
+    @staticmethod
+    def track(event, payload):
+        pass
+
+
+class database:
+    @staticmethod
+    def insert(**fields):
+        pass
+""",
+    ),
+
+    # ── P03: Control + enforce + demonstrate ────────────────────────────────
+    Sample(
+        id="P03",
+        label="Missing opt-out, auth guard, and audit on sensitive changes",
+        source="ai-generated",
+        description="LLM-generated account helpers that skip user control and accountability patterns.",
+        tags=["privacy", "hoepman"],
+        expected_rules={
+            "marketing_without_opt_out",
+            "sensitive_access_without_auth",
+            "sensitive_change_without_audit",
+        },
+        code="""
+def send_weekly_deals(email):
+    mailer.send_email(email, subject="Deals")
+
+
+def export_secrets(user):
+    return user.password, user.ssn
+
+
+def change_password(user, new_password):
+    user.password = new_password
+    db.commit()
+
+
+class mailer:
+    @staticmethod
+    def send_email(email, subject):
+        pass
+
+
+class db:
+    @staticmethod
+    def commit():
+        pass
+""",
+    ),
 ]
 
 SAMPLES_BY_ID: dict[str, Sample] = {s.id: s for s in SAMPLES}
