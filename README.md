@@ -171,18 +171,18 @@ vibecodeguide scan ./project --output report.txt
 | VG012   | Debug Mode Enabled                        | MEDIUM   | Security           |
 | VG013   | Dynamic SQL Query Construction            | HIGH     | Security           |
 
-### Privacy rules (Hoepman strategies)
+### Privacy rules
 
-| Rule ID | Title | Severity | Strategy |
-| ------- | ----- | -------- | -------- |
-| PG001 | PII in Logs or Print Output | HIGH | MINIMIZE |
-| PG002 | Plaintext Sensitive Data Storage | HIGH | HIDE |
-| PG003 | PII Sent to Third-Party Service | HIGH | SEPARATE |
-| PG004 | Identifiable Data in Analytics Event | MEDIUM | AGGREGATE |
-| PG005 | PII Processing Without Consent Handling | MEDIUM | INFORM |
-| PG006 | Outbound Communication Without Opt-Out Check | MEDIUM | CONTROL |
-| PG007 | Sensitive Data Access Without Auth Guard | HIGH | ENFORCE |
-| PG008 | Sensitive Data Change Without Audit Trail | MEDIUM | DEMONSTRATE |
+| Rule ID | Title                                        | Severity | Strategy    |
+| ------- | -------------------------------------------- | -------- | ----------- |
+| PG001   | PII in Logs or Print Output                  | HIGH     | MINIMIZE    |
+| PG002   | Plaintext Sensitive Data Storage             | HIGH     | HIDE        |
+| PG003   | PII Sent to Third-Party Service              | HIGH     | SEPARATE    |
+| PG004   | Identifiable Data in Analytics Event         | MEDIUM   | AGGREGATE   |
+| PG005   | PII Processing Without Consent Handling      | MEDIUM   | INFORM      |
+| PG006   | Outbound Communication Without Opt-Out Check | MEDIUM   | CONTROL     |
+| PG007   | Sensitive Data Access Without Auth Guard     | HIGH     | ENFORCE     |
+| PG008   | Sensitive Data Change Without Audit Trail    | MEDIUM   | DEMONSTRATE |
 
 Findings may include confidence, risk score, CWE, OWASP category, privacy strategy, impact, and remediation text.
 
