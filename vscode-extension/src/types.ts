@@ -47,10 +47,55 @@ export interface AnalyzeResponse {
   findings: Finding[];
   parse_errors: ParseError[];
   summary: ScanSummary;
+  guidance_enabled?: boolean;
+}
+
+export interface DemoDelta {
+  additional_findings_count: number;
+  guidance_only_rule_ids: string[];
+  privacy_strategies_surfaced: string[];
+  baseline_finding_count: number;
+  guided_finding_count: number;
+  baseline_security_count: number;
+  guided_security_count: number;
+  guided_privacy_count: number;
+}
+
+export interface DemoAnalyzeResponse {
+  ok: boolean;
+  sample_label: string;
+  baseline: AnalyzeResponse;
+  with_guidance: AnalyzeResponse;
+  delta: DemoDelta;
+}
+
+export interface ChangedLine {
+  line_number: number;
+  before_text: string;
+  after_text: string;
+}
+
+export interface CodeChangeImpactResponse {
+  ok: boolean;
+  sample_label: string;
+  changed_lines: ChangedLine[];
+  before: AnalyzeResponse;
+  after: AnalyzeResponse;
+  resolved_findings: Finding[];
+  introduced_findings: Finding[];
+  before_privacy_count: number;
+  after_privacy_count: number;
+  before_security_count: number;
+  after_security_count: number;
+  before_total_count: number;
+  after_total_count: number;
+  resolved_privacy_count: number;
+  resolved_security_count: number;
 }
 
 export interface VibeCodeGuideConfig {
   securityApiUrl: string;
   minSeverity: Severity;
   requestTimeoutMs: number;
+  enablePrivacySecurityGuidance: boolean;
 }

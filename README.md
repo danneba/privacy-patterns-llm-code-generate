@@ -136,9 +136,32 @@ vibecodeguide scan ./project --output report.json --format json
 vibecodeguide scan ./project --output report.txt
 ```
 
+### Privacy & Security Guidance (baseline vs guided)
+
+**Baseline** (`--no-guidance`): security rules only (VG001–VG013).
+
+**Guided** (default): security + privacy guidance module (PG001–PG008, Hoepman strategies).
+
+```bash
+# Baseline only
+vibecodeguide scan samples/privacy_showcase_vulnerable.py --no-guidance
+
+# Full analysis (default)
+vibecodeguide scan samples/privacy_showcase_vulnerable.py
+
+# Side-by-side demo on the same file
+vibecodeguide demo samples/privacy_showcase_vulnerable.py
+vibecodeguide demo --format json --output demo-report.json
+```
+
+API header: `X-Enable-Guidance: true|false` on `POST /analyze`.
+
+Side-by-side comparison: `POST /analyze/demo`.
+
 ### Other flags
 
 ```bash
+--no-guidance     Baseline mode: disable privacy & security guidance module
 --no-snippet      Exclude source code snippets from findings
 --quiet           Suppress informational messages when using --output
 ```
@@ -274,7 +297,29 @@ Open `vscode-extension/` in VS Code, press **F5**, then on a Python file use:
 
 Findings appear in **Problems** (security and privacy, with Hoepman strategy labels on privacy issues); full reports in the **VibeCodeGuide** output channel include privacy score and per-category counts.
 
-Settings: **VibeCodeGuide** (`vibecodeguide.securityApiUrl`, `vibecodeguide.minSeverity`, `vibecodeguide.requestTimeoutMs`).
+**Guidance comparison demo:** run **VibeCodeGuide: Compare Guidance OFF vs ON** on a Python file. This opens a side-by-side **Before / After** panel with:
+
+- Summary banner (Guidance OFF vs ON counts and +N privacy findings)
+- Helper text explaining each mode
+- **New with Guidance** badges on findings that only appear when guidance is enabled
+- Problems panel entries tagged `VibeCodeGuide · New with Guidance` for the same items
+
+**Code change impact demo** (automatic — no separate snapshot commands):
+
+1. Open `samples/privacy_showcase_vulnerable.py` and run **VibeCodeGuide: Analyze File**
+2. Comment out or fix a line (e.g. `# print(f"Login for {email}")`) and **save** (Cmd+S)
+3. Run **Analyze File** again — the extension compares with your previous run on this file
+
+The **Analysis changes** panel and output show **resolved**, **introduced**, and **unchanged** findings; Problems tags new issues as `New since last analysis`.
+
+Settings: **VibeCodeGuide**
+
+| Setting | Description |
+| ------- | ----------- |
+| `vibecodeguide.enablePrivacySecurityGuidance` | **Enable Privacy & Security Guidance** (default: on) |
+| `vibecodeguide.securityApiUrl` | Analyzer API base URL |
+| `vibecodeguide.minSeverity` | Minimum reported severity |
+| `vibecodeguide.requestTimeoutMs` | HTTP timeout |
 
 ### Install permanently
 
