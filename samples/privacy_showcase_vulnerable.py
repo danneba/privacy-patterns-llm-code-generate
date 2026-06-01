@@ -21,6 +21,7 @@ def pg002_hide_plaintext_storage():
     return stored_password, national_id
 
 
+
 def pg003_separate_pii_to_third_party(email, profile):
     requests.post(
         "https://analytics.example.com/collect",
