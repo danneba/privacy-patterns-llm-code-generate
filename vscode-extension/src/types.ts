@@ -36,4 +36,7 @@ export interface VibeCodeGuideConfig {
   securityApiUrl: string;
   minSeverity: Severity;
   requestTimeoutMs: number;
+  openaiModel: string;
+  openaiBaseUrl: string;
+  autoAnalyzeGeneratedCode: boolean;
 }

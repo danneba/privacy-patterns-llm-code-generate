@@ -1,5 +1,6 @@
 import * as vscode from "vscode";
 import { analyzeCode, ApiError, checkHealth } from "./client";
+import { registerChatView } from "./chatViewProvider";
 import { getConfig } from "./config";
 import { VibeCodeGuideDiagnostics } from "./diagnostics";
 import { formatAnalyzeSummary } from "./report";
@@ -100,6 +101,8 @@ export function activate(context: vscode.ExtensionContext): void {
       `${EXTENSION_NAME}: ${err instanceof Error ? err.message : String(err)}`,
     );
   }
+
+  registerChatView(context);
 
   context.subscriptions.push(
     output,

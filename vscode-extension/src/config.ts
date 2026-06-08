@@ -7,5 +7,8 @@ export function getConfig(): VibeCodeGuideConfig {
     securityApiUrl: cfg.get<string>("securityApiUrl", "http://127.0.0.1:8000").replace(/\/$/, ""),
     minSeverity: cfg.get<Severity>("minSeverity", "LOW"),
     requestTimeoutMs: cfg.get<number>("requestTimeoutMs", 60000),
+    openaiModel: cfg.get<string>("openaiModel", "gpt-4o-mini"),
+    openaiBaseUrl: cfg.get<string>("openaiBaseUrl", "https://api.openai.com/v1").replace(/\/$/, ""),
+    autoAnalyzeGeneratedCode: cfg.get<boolean>("autoAnalyzeGeneratedCode", true),
   };
 }

@@ -1,7 +1,7 @@
 {
   "name": "vibecodeguide",
   "displayName": "VibeCodeGuide",
-  "description": "Security and privacy analysis for Python via the VibeCodeGuide analyzer API.",
+  "description": "Security and privacy analysis and secure AI code generation for Python.",
   "version": "0.1.0",
   "publisher": "vibecodeguide",
   "engines": {
@@ -12,11 +12,22 @@
     "Other"
   ],
   "activationEvents": [
-    "onLanguage:python"
+    "onLanguage:python",
+    "onView:vibecodeguide.chatView"
   ],
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
+      {
+        "command": "vibecodeguide.openChat",
+        "title": "VibeCodeGuide: Open Secure Code Chat",
+        "icon": "$(comment-discussion)"
+      },
+      {
+        "command": "vibecodeguide.setOpenAiApiKey",
+        "title": "VibeCodeGuide: Set OpenAI API Key",
+        "icon": "$(key)"
+      },
       {
         "command": "vibecodeguide.analyze",
         "title": "VibeCodeGuide: Analyze File",
@@ -33,6 +44,24 @@
         "icon": "$(heart)"
       }
     ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "vibecodeguide",
+          "title": "VibeCodeGuide",
+          "icon": "$(shield)"
+        }
+      ]
+    },
+    "views": {
+      "vibecodeguide": [
+        {
+          "type": "webview",
+          "id": "vibecodeguide.chatView",
+          "name": "Secure Code Chat"
+        }
+      ]
+    },
     "menus": {
       "editor/context": [
         {
@@ -47,6 +76,12 @@
         }
       ],
       "commandPalette": [
+        {
+          "command": "vibecodeguide.openChat"
+        },
+        {
+          "command": "vibecodeguide.setOpenAiApiKey"
+        },
         {
           "command": "vibecodeguide.analyze",
           "when": "editorLangId == python"
@@ -85,6 +120,21 @@
           "default": 60000,
           "minimum": 5000,
           "description": "HTTP request timeout in milliseconds."
+        },
+        "vibecodeguide.openaiModel": {
+          "type": "string",
+          "default": "gpt-4o-mini",
+          "description": "OpenAI model used for secure code generation in the chat panel."
+        },
+        "vibecodeguide.openaiBaseUrl": {
+          "type": "string",
+          "default": "https://api.openai.com/v1",
+          "description": "OpenAI API base URL (change for compatible API proxies)."
+        },
+        "vibecodeguide.autoAnalyzeGeneratedCode": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automatically scan generated code with the VibeCodeGuide analyzer."
         }
       }
     }

@@ -252,13 +252,15 @@ npm run compile
 
 Open `vscode-extension/` in VS Code, press **F5**, then on a Python file use:
 
+- **VibeCodeGuide: Open Secure Code Chat** — sidebar chat to generate Python with OWASP, CWE, and privacy rules
 - **VibeCodeGuide: Analyze File**
 - **VibeCodeGuide: Analyze Selection**
 - **VibeCodeGuide: Check API Health**
+- **VibeCodeGuide: Set OpenAI API Key**
 
-Findings appear in **Problems**; full text reports in the **VibeCodeGuide** output channel.
+The **Secure Code Chat** panel uses OpenAI to generate Python code guided by OWASP Top 10, CWE rules (VG001–VG013), and privacy patterns. Generated code is automatically scanned by the analyzer; use **Fix Issues** to regenerate a compliant version.
 
-Settings: **VibeCodeGuide** (`vibecodeguide.securityApiUrl`, `vibecodeguide.minSeverity`, `vibecodeguide.requestTimeoutMs`).
+Settings: **VibeCodeGuide** (`vibecodeguide.securityApiUrl`, `vibecodeguide.minSeverity`, `vibecodeguide.requestTimeoutMs`, `vibecodeguide.openaiModel`, `vibecodeguide.openaiBaseUrl`, `vibecodeguide.autoAnalyzeGeneratedCode`). Store your OpenAI API key via **VibeCodeGuide: Set OpenAI API Key** (saved in VS Code Secret Storage).
 
 ### Install permanently
 
