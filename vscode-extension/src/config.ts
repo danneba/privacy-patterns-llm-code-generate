@@ -10,5 +10,6 @@ export function getConfig(): VibeCodeGuideConfig {
     openaiModel: cfg.get<string>("openaiModel", "gpt-4o-mini"),
     openaiBaseUrl: cfg.get<string>("openaiBaseUrl", "https://api.openai.com/v1").replace(/\/$/, ""),
     autoAnalyzeGeneratedCode: cfg.get<boolean>("autoAnalyzeGeneratedCode", true),
+    enablePrivacySecurityGuidance: cfg.get<boolean>("enablePrivacySecurityGuidance", true),
   };
 }

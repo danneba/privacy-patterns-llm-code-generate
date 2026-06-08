@@ -42,6 +42,11 @@
         "command": "vibecodeguide.checkHealth",
         "title": "VibeCodeGuide: Check API Health",
         "icon": "$(heart)"
+      },
+      {
+        "command": "vibecodeguide.runGuidanceDemo",
+        "title": "VibeCodeGuide: Compare Guidance OFF vs ON",
+        "icon": "$(diff)"
       }
     ],
     "viewsContainers": {
@@ -92,6 +97,10 @@
         },
         {
           "command": "vibecodeguide.checkHealth"
+        },
+        {
+          "command": "vibecodeguide.runGuidanceDemo",
+          "when": "editorLangId == python"
         }
       ]
     },
@@ -135,6 +144,11 @@
           "type": "boolean",
           "default": true,
           "description": "Automatically scan generated code with the VibeCodeGuide analyzer."
+        },
+        "vibecodeguide.enablePrivacySecurityGuidance": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable Privacy & Security Guidance. When off, only baseline security checks run. When on, the guidance module adds privacy findings and recommendations. Use 'Compare Guidance OFF vs ON' to see the difference."
         }
       }
     }

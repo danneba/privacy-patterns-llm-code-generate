@@ -1,9 +1,19 @@
 import * as vscode from "vscode";
-import { analyzeCode, ApiError, checkHealth } from "./client";
+import { analyzeCode, analyzeDemo, ApiError, checkHealth } from "./client";
+import { buildAnalysisDiff } from "./analysisDiff";
+import { AnalysisDiffPanel } from "./analysisDiffView";
+import { getStoredAnalysis, saveStoredAnalysis } from "./analysisHistory";
 import { registerChatView } from "./chatViewProvider";
+import { GuidanceComparisonPanel } from "./comparisonView";
 import { getConfig } from "./config";
 import { VibeCodeGuideDiagnostics } from "./diagnostics";
-import { formatAnalyzeSummary } from "./report";
+import { buildComparisonViewModel } from "./comparisonModel";
+import {
+  countFindingsByCategory,
+  formatAnalysisDiff,
+  formatAnalyzeSummary,
+  formatDemoComparison,
+} from "./report";
 
 const EXTENSION_NAME = "VibeCodeGuide";
 const OUTPUT_CHANNEL = EXTENSION_NAME;
@@ -38,6 +48,20 @@ export function activate(context: vscode.ExtensionContext): void {
   const output = vscode.window.createOutputChannel(OUTPUT_CHANNEL);
   const diagnostics = new VibeCodeGuideDiagnostics();
 
+  function handleError(err: unknown, apiUrl: string): void {
+    if (err instanceof ApiError) {
+      const hint =
+        err.status === undefined
+          ? ` Is the API running at ${apiUrl}?`
+          : "";
+      vscode.window.showErrorMessage(`${EXTENSION_NAME}: ${err.message}${hint}`);
+      return;
+    }
+    vscode.window.showErrorMessage(
+      `${EXTENSION_NAME}: ${err instanceof Error ? err.message : String(err)}`,
+    );
+  }
+
   async function runAnalyze(selectionOnly: boolean) {
     const editor = getActivePythonEditor();
     if (!editor) {
@@ -45,6 +69,107 @@ export function activate(context: vscode.ExtensionContext): void {
     }
 
     const code = getCodeFromEditor(editor, selectionOnly);
+    if (!code) {
+      return;
+    }
+
+    const config = getConfig();
+    const uri = editor.document.uri;
+    const uriKey = uri.toString();
+    const fileName = editor.document.fileName || "<code>";
+    const guidanceLabel = config.enablePrivacySecurityGuidance
+      ? "with guidance"
+      : "baseline only";
+    const previous =
+      !selectionOnly ? getStoredAnalysis(context, uriKey) : undefined;
+
+    await vscode.window.withProgress(
+      {
+        location: vscode.ProgressLocation.Notification,
+        title: EXTENSION_NAME,
+        cancellable: false,
+      },
+      async (progress) => {
+        try {
+          progress.report({ message: `Analyzing (${guidanceLabel})…` });
+          const analyzeResult = await analyzeCode(config, code);
+
+          const diff =
+            !selectionOnly && previous && previous.code !== code
+              ? buildAnalysisDiff(previous, code, analyzeResult)
+              : undefined;
+
+          diagnostics.setFromAnalyze(uri, editor.document, analyzeResult, diff);
+
+          output.clear();
+          if (diff) {
+            output.appendLine(formatAnalysisDiff(diff));
+            output.appendLine("");
+          }
+          output.appendLine(formatAnalyzeSummary(analyzeResult));
+          output.show(true);
+
+          if (diff) {
+            AnalysisDiffPanel.show(context, diff);
+          }
+
+          const counts = countFindingsByCategory(analyzeResult);
+          if (analyzeResult.parse_errors.length > 0) {
+            vscode.window.showWarningMessage(
+              `${EXTENSION_NAME}: parse error — see Problems panel.`,
+            );
+          } else if (diff) {
+            vscode.window.showInformationMessage(
+              `${EXTENSION_NAME}: ${counts.total} issue(s) (${guidanceLabel}) — ` +
+                `resolved ${diff.resolved.length}, new ${diff.introduced.length}, ` +
+                `unchanged ${diff.unchanged.length}. See Analysis changes panel.`,
+            );
+          } else if (counts.total === 0) {
+            vscode.window.showInformationMessage(
+              `${EXTENSION_NAME}: no issues found (${guidanceLabel}).` +
+                (!selectionOnly && !previous
+                  ? " Edit and run Analyze File again to see what changed."
+                  : ""),
+            );
+          } else {
+            const parts: string[] = [];
+            if (counts.security > 0) {
+              parts.push(`${counts.security} security`);
+            }
+            if (counts.privacy > 0) {
+              parts.push(`${counts.privacy} privacy`);
+            }
+            if (counts.other > 0) {
+              parts.push(`${counts.other} other`);
+            }
+            const changeHint =
+              !selectionOnly && !previous
+                ? " Edit, save, and analyze again to compare with this run."
+                : !selectionOnly && previous && previous.code === code
+                  ? " File unchanged since last analysis."
+                  : "";
+            vscode.window.showInformationMessage(
+              `${EXTENSION_NAME}: ${counts.total} issue(s) (${parts.join(", ")}, ${guidanceLabel}) — see Problems.${changeHint}`,
+            );
+          }
+
+          if (!selectionOnly) {
+            await saveStoredAnalysis(context, uriKey, fileName, code, analyzeResult);
+          }
+        } catch (err) {
+          handleError(err, config.securityApiUrl);
+        }
+      },
+    );
+  }
+
+  async function runGuidanceDemo() {
+    const editor = getActivePythonEditor();
+    if (!editor) {
+      return;
+    }
+
+    const code = getCodeFromEditor(editor, false);
     if (!code) {
       return;
     }
@@ -60,45 +185,28 @@ export function activate(context: vscode.ExtensionContext): void {
       },
       async (progress) => {
         try {
-          progress.report({ message: "Running security and privacy analysis…" });
-          const analyzeResult = await analyzeCode(config, code);
-          diagnostics.setFromAnalyze(uri, editor.document, analyzeResult);
+          progress.report({ message: "Step 1/3: Running baseline (guidance OFF)…" });
+          progress.report({ message: "Step 2/3: Running with guidance ON…" });
+          const demo = await analyzeDemo(config, code);
+          const model = buildComparisonViewModel(demo);
+
+          progress.report({ message: "Step 3/3: Building comparison view…" });
+          diagnostics.setFromDemoComparison(uri, editor.document, demo);
+          GuidanceComparisonPanel.show(context, demo);
+
           output.clear();
-          output.appendLine(formatAnalyzeSummary(analyzeResult));
+          output.appendLine(formatDemoComparison(demo));
           output.show(true);
 
-          const issueCount = analyzeResult.findings.length;
-          if (analyzeResult.parse_errors.length > 0) {
-            vscode.window.showWarningMessage(
-              `${EXTENSION_NAME}: parse error — see Problems panel.`,
-            );
-          } else if (issueCount === 0) {
-            vscode.window.showInformationMessage(
-              `${EXTENSION_NAME}: no security or privacy issues found.`,
-            );
-          } else {
-            vscode.window.showWarningMessage(
-              `${EXTENSION_NAME}: ${issueCount} issue(s) found — see Problems panel.`,
-            );
-          }
+          vscode.window.showInformationMessage(
+            `${EXTENSION_NAME}: Guidance OFF ${model.baselineCount} → ON ${model.guidedCount} ` +
+              `(+${model.additionalPrivacyCount} privacy findings). ` +
+              "See comparison panel and Problems (★ New with Guidance).",
+          );
         } catch (err) {
           handleError(err, config.securityApiUrl);
         }
       },
-    );
-  }
-
-  function handleError(err: unknown, apiUrl: string): void {
-    if (err instanceof ApiError) {
-      const hint =
-        err.status === undefined
-          ? ` Is the API running at ${apiUrl}?`
-          : "";
-      vscode.window.showErrorMessage(`${EXTENSION_NAME}: ${err.message}${hint}`);
-      return;
-    }
-    vscode.window.showErrorMessage(
-      `${EXTENSION_NAME}: ${err instanceof Error ? err.message : String(err)}`,
     );
   }
 
@@ -109,6 +217,7 @@ export function activate(context: vscode.ExtensionContext): void {
     diagnostics,
     vscode.commands.registerCommand("vibecodeguide.analyze", () => runAnalyze(false)),
     vscode.commands.registerCommand("vibecodeguide.analyzeSelection", () => runAnalyze(true)),
+    vscode.commands.registerCommand("vibecodeguide.runGuidanceDemo", () => runGuidanceDemo()),
     vscode.commands.registerCommand("vibecodeguide.checkHealth", async () => {
       const config = getConfig();
       const securityOk = await checkHealth(config.securityApiUrl, config.requestTimeoutMs);

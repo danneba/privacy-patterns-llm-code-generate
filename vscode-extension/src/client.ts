@@ -1,4 +1,4 @@
-import type { AnalyzeResponse, VibeCodeGuideConfig } from "./types";
+import type { AnalyzeResponse, CodeChangeImpactResponse, DemoAnalyzeResponse, VibeCodeGuideConfig } from "./types";
 
 export class ApiError extends Error {
   constructor(
@@ -83,11 +83,94 @@ export async function checkHealth(baseUrl: string, timeoutMs: number): Promise<b
   }
 }
 
+function guidanceHeader(enabled: boolean): string {
+  return enabled ? "true" : "false";
+}
+
 export function analyzeCode(config: VibeCodeGuideConfig, code: string): Promise<AnalyzeResponse> {
   return postJson<AnalyzeResponse>(`${config.securityApiUrl}/analyze`, code, {
     timeoutMs: config.requestTimeoutMs,
     headers: {
       "X-Min-Severity": config.minSeverity,
+      "X-Enable-Guidance": guidanceHeader(config.enablePrivacySecurityGuidance),
     },
   });
+}
+
+export function analyzeDemo(config: VibeCodeGuideConfig, code: string): Promise<DemoAnalyzeResponse> {
+  return postJson<DemoAnalyzeResponse>(`${config.securityApiUrl}/analyze/demo`, code, {
+    timeoutMs: config.requestTimeoutMs,
+    headers: {
+      "X-Min-Severity": config.minSeverity,
+    },
+  });
+}
+
+async function postImpactJson(
+  url: string,
+  payload: { before: string; after: string; filename: string },
+  options: { headers?: Record<string, string>; timeoutMs: number },
+): Promise<CodeChangeImpactResponse> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), options.timeoutMs);
+
+  try {
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...options.headers,
+      },
+      body: JSON.stringify(payload),
+      signal: controller.signal,
+    });
+
+    const text = await response.text();
+    let body: unknown;
+    try {
+      body = text ? JSON.parse(text) : {};
+    } catch {
+      throw new ApiError(`Invalid JSON from ${url}: ${text.slice(0, 200)}`, response.status);
+    }
+
+    if (!response.ok) {
+      const detail =
+        typeof body === "object" && body !== null && "detail" in body
+          ? (body as { detail: unknown }).detail
+          : body;
+      const message = typeof detail === "string" ? detail : `Request failed (${response.status})`;
+      throw new ApiError(message, response.status, detail);
+    }
+
+    return body as CodeChangeImpactResponse;
+  } catch (err) {
+    if (err instanceof ApiError) {
+      throw err;
+    }
+    if (err instanceof Error && err.name === "AbortError") {
+      throw new ApiError(`Request timed out after ${options.timeoutMs}ms`);
+    }
+    throw new ApiError(err instanceof Error ? err.message : String(err));
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+export function analyzeCodeChangeImpact(
+  config: VibeCodeGuideConfig,
+  before: string,
+  after: string,
+  filename: string,
+): Promise<CodeChangeImpactResponse> {
+  return postImpactJson(
+    `${config.securityApiUrl}/analyze/impact`,
+    { before, after, filename },
+    {
+      timeoutMs: config.requestTimeoutMs,
+      headers: {
+        "X-Min-Severity": config.minSeverity,
+        "X-Enable-Guidance": "true",
+      },
+    },
+  );
 }

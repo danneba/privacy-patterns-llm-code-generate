@@ -15,4 +15,4 @@ security = "security.cli.main:main"
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["security*"]
+include = ["security*", "privacy*"]

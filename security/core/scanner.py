@@ -2,6 +2,7 @@ import ast
 from pathlib import Path
 from typing import Optional, Tuple, List
 
+from privacy.analyzers.analyzer import PrivacyAnalyzer
 from security.analyzers.security.analyzer import SecurityAnalyzer
 from security.analyzers.smells.analyzer import SmellAnalyzer
 from security.analyzers.performance.analyzer import PerformanceAnalyzer
@@ -14,10 +15,15 @@ class Scanner:
         self,
         min_severity: Optional[Severity] = None,
         include_snippet: bool = True,
+        enable_guidance: bool = True,
+        include_auxiliary_analyzers: bool = True,
     ) -> None:
         self.min_severity = min_severity
         self.include_snippet = include_snippet
+        self.enable_guidance = enable_guidance
+        self.include_auxiliary_analyzers = include_auxiliary_analyzers
         self._security = SecurityAnalyzer()
+        self._privacy = PrivacyAnalyzer()
         self._smells = SmellAnalyzer()
         self._performance = PerformanceAnalyzer()
 
@@ -82,8 +88,11 @@ class Scanner:
     def _run_all(self, tree: ast.AST, file_path: str, source_lines: List[str]) -> List[Finding]:
         findings: List[Finding] = []
         findings.extend(self._security.analyze(tree, file_path, source_lines))
-        findings.extend(self._smells.analyze(tree, file_path, source_lines))
-        findings.extend(self._performance.analyze(tree, file_path, source_lines))
+        if self.enable_guidance:
+            findings.extend(self._privacy.analyze(tree, file_path, source_lines))
+        if self.include_auxiliary_analyzers:
+            findings.extend(self._smells.analyze(tree, file_path, source_lines))
+            findings.extend(self._performance.analyze(tree, file_path, source_lines))
         return [finding for finding in findings if not self._is_ignored(finding, source_lines)]
 
     def _is_ignored(self, finding: Finding, source_lines: List[str]) -> bool:

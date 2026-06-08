@@ -10,6 +10,7 @@ _COLORS = {
 }
 _CAT_LABELS = {
     Category.SECURITY: "SEC",
+    Category.PRIVACY: "PRIV",
     Category.CODE_SMELL: "SMELL",
     Category.PERFORMANCE: "PERF",
 }
@@ -49,6 +50,8 @@ class TextReporter:
                     meta.append(f"confidence={finding.confidence.value}")
                 if finding.risk_score is not None:
                     meta.append(f"risk={finding.risk_score}/100")
+                if finding.privacy_strategy:
+                    meta.append(f"strategy={finding.privacy_strategy}")
                 if meta:
                     lines.append(f"  Meta: {' | '.join(meta)}")
                 lines.append(f"  {finding.message}")
@@ -76,11 +79,13 @@ class TextReporter:
             f"Found {len(result.findings)} issue(s): "
             f"{by_sev['CRITICAL']} critical, {by_sev['HIGH']} high, "
             f"{by_sev['MEDIUM']} medium, {by_sev['LOW']} low, {by_sev['INFO']} info  |  "
-            f"security={by_cat['SECURITY']}  smell={by_cat['CODE_SMELL']}  perf={by_cat['PERFORMANCE']}"
+            f"security={by_cat['SECURITY']}  privacy={by_cat['PRIVACY']}  "
+            f"smell={by_cat['CODE_SMELL']}  perf={by_cat['PERFORMANCE']}"
         )
         if risk:
             lines.append(
                 f"Security score: {risk['security_score']}/100  |  "
+                f"Privacy score: {risk['privacy_score']}/100  |  "
                 f"max risk={risk['max_risk_score']}/100  |  "
                 f"avg risk={risk['average_risk_score']}/100"
             )

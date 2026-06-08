@@ -1,7 +1,7 @@
 # VibeCodeGuide: Security and Privacy Analyzer for AI-Generated Code
 
-> ASE 2026 — Paris Lodron University of Salzburg  
-> **Authors:** Haylemicheal Mekonnen, Eslam Younis, Elbetel Reta
+> Privacy Engineering 2026 — Paris Lodron University of Salzburg  
+> **Authors:** Haylemicheal Mekonnen, Daniel
 
 VibeCodeGuide helps teams review **vibe-coded** Python before it ships. It statically analyzes source for **security vulnerabilities** and **privacy risks**—unsafe execution, secrets, weak crypto, insecure APIs, sensitive data handling, and related issues common in AI-generated code.
 
@@ -79,13 +79,13 @@ VibeCodeGuide is in an **early but working** stage.
 **Available now:**
 
 - Static **security** rules (VG001–VG013) for Python
-- **Privacy-oriented** checks via the same engine (e.g. hardcoded secrets, unsafe data handling patterns)
+- **Privacy** rule pack (PG001–PG008) mapped to Hoepman privacy design strategies
+- `PRIVACY` finding category in CLI/JSON reports with strategy metadata
 - CLI (`vibecodeguide scan`), REST API (`security.api`), and VS Code extension
 - Benchmark dataset for measuring detection quality
 
 **Planned:**
 
-- Dedicated privacy rule pack and `PRIVACY` finding category in reports
 - Broader language and framework coverage
 - CI templates and policy gates
 
@@ -136,42 +136,78 @@ vibecodeguide scan ./project --output report.json --format json
 vibecodeguide scan ./project --output report.txt
 ```
 
+### Privacy & Security Guidance (baseline vs guided)
+
+**Baseline** (`--no-guidance`): security rules only (VG001–VG013).
+
+**Guided** (default): security + privacy guidance module (PG001–PG008, Hoepman strategies).
+
+```bash
+# Baseline only
+vibecodeguide scan samples/privacy_showcase_vulnerable.py --no-guidance
+
+# Full analysis (default)
+vibecodeguide scan samples/privacy_showcase_vulnerable.py
+
+# Side-by-side demo on the same file
+vibecodeguide demo samples/privacy_showcase_vulnerable.py
+vibecodeguide demo --format json --output demo-report.json
+```
+
+API header: `X-Enable-Guidance: true|false` on `POST /analyze`.
+
+Side-by-side comparison: `POST /analyze/demo`.
+
 ### Other flags
 
 ```bash
+--no-guidance     Baseline mode: disable privacy & security guidance module
 --no-snippet      Exclude source code snippets from findings
 --quiet           Suppress informational messages when using --output
 ```
 
 ### Exit codes
 
-| Code | Meaning |
-|------|---------|
+| Code | Meaning                                               |
+| ---- | ----------------------------------------------------- |
 | `0`  | Scan completed — no findings above selected threshold |
-| `1`  | Scan completed — findings detected |
-| `2`  | Operational error or invalid usage |
+| `1`  | Scan completed — findings detected                    |
+| `2`  | Operational error or invalid usage                    |
 
 ---
 
 ## Implemented Rules
 
-| Rule ID | Title | Severity | Focus |
-|---------|-------|----------|--------|
-| VG001 | Use of `eval()` | CRITICAL | Security |
-| VG002 | Use of `exec()` | CRITICAL | Security |
-| VG003 | Hardcoded Secret | HIGH | Security / Privacy |
-| VG004 | Insecure Randomness | MEDIUM | Security |
-| VG005 | Dangerous Subprocess Usage (`shell=True`) | HIGH | Security |
-| VG006 | Pickle Deserialization | HIGH | Security |
-| VG007 | Assert Used for Security Check | MEDIUM | Security |
-| VG008 | Weak Hash Algorithm | HIGH | Security |
-| VG009 | OS Shell Execution | HIGH | Security |
-| VG010 | Unsafe YAML Deserialization | HIGH | Security |
-| VG011 | TLS Verification Disabled | HIGH | Security |
-| VG012 | Debug Mode Enabled | MEDIUM | Security |
-| VG013 | Dynamic SQL Query Construction | HIGH | Security |
+| Rule ID | Title                                     | Severity | Focus              |
+| ------- | ----------------------------------------- | -------- | ------------------ |
+| VG001   | Use of `eval()`                           | CRITICAL | Security           |
+| VG002   | Use of `exec()`                           | CRITICAL | Security           |
+| VG003   | Hardcoded Secret                          | HIGH     | Security / Privacy |
+| VG004   | Insecure Randomness                       | MEDIUM   | Security           |
+| VG005   | Dangerous Subprocess Usage (`shell=True`) | HIGH     | Security           |
+| VG006   | Pickle Deserialization                    | HIGH     | Security           |
+| VG007   | Assert Used for Security Check            | MEDIUM   | Security           |
+| VG008   | Weak Hash Algorithm                       | HIGH     | Security           |
+| VG009   | OS Shell Execution                        | HIGH     | Security           |
+| VG010   | Unsafe YAML Deserialization               | HIGH     | Security           |
+| VG011   | TLS Verification Disabled                 | HIGH     | Security           |
+| VG012   | Debug Mode Enabled                        | MEDIUM   | Security           |
+| VG013   | Dynamic SQL Query Construction            | HIGH     | Security           |
 
-Findings may include confidence, risk score, CWE, OWASP category, impact, and remediation text.
+### Privacy rules
+
+| Rule ID | Title                                        | Severity | Strategy    |
+| ------- | -------------------------------------------- | -------- | ----------- |
+| PG001   | PII in Logs or Print Output                  | HIGH     | MINIMIZE    |
+| PG002   | Plaintext Sensitive Data Storage             | HIGH     | HIDE        |
+| PG003   | PII Sent to Third-Party Service              | HIGH     | SEPARATE    |
+| PG004   | Identifiable Data in Analytics Event         | MEDIUM   | AGGREGATE   |
+| PG005   | PII Processing Without Consent Handling      | MEDIUM   | INFORM      |
+| PG006   | Outbound Communication Without Opt-Out Check | MEDIUM   | CONTROL     |
+| PG007   | Sensitive Data Access Without Auth Guard     | HIGH     | ENFORCE     |
+| PG008   | Sensitive Data Change Without Audit Trail    | MEDIUM   | DEMONSTRATE |
+
+Findings may include confidence, risk score, CWE, OWASP category, privacy strategy, impact, and remediation text.
 
 ### Suppressing intentional findings
 
@@ -205,14 +241,17 @@ Scanned 4 file(s). Found 3 issue(s): 2 high, 1 medium, 0 low.
 ## Project Structure
 
 ```
-generated-code-analyzer/
-├── security/              Security & privacy analyzer (Python package)
+privacy-patterns-llm-code-generate/
+├── security/              Security, smell, and performance analyzer core
 │   ├── api/               FastAPI service for editor/HTTP clients
 │   ├── cli/               vibecodeguide CLI
 │   ├── core/              Scanner orchestration
 │   ├── rules/security/    Rule implementations VG001–VG013
 │   ├── models/            Finding and scan result types
 │   └── reporters/         Text and JSON formatters
+├── privacy/               Privacy rule pack (PG001–PG008, Hoepman strategies)
+│   ├── analyzers/         PrivacyAnalyzer
+│   └── rules/             Privacy rule implementations
 ├── vscode-extension/      VibeCodeGuide VS Code / Cursor extension
 ├── samples/               Vulnerable examples for demos and tests
 ├── benchmarks/            Labeled samples for evaluation
@@ -260,7 +299,36 @@ Open `vscode-extension/` in VS Code, press **F5**, then on a Python file use:
 
 The **Secure Code Chat** panel uses OpenAI to generate Python code guided by OWASP Top 10, CWE rules (VG001–VG013), and privacy patterns. Generated code is automatically scanned by the analyzer; use **Fix Issues** to regenerate a compliant version.
 
-Settings: **VibeCodeGuide** (`vibecodeguide.securityApiUrl`, `vibecodeguide.minSeverity`, `vibecodeguide.requestTimeoutMs`, `vibecodeguide.openaiModel`, `vibecodeguide.openaiBaseUrl`, `vibecodeguide.autoAnalyzeGeneratedCode`). Store your OpenAI API key via **VibeCodeGuide: Set OpenAI API Key** (saved in VS Code Secret Storage).
+Findings appear in **Problems** (security and privacy, with Hoepman strategy labels on privacy issues); full reports in the **VibeCodeGuide** output channel include privacy score and per-category counts.
+
+**Guidance comparison demo:** run **VibeCodeGuide: Compare Guidance OFF vs ON** on a Python file. This opens a side-by-side **Before / After** panel with:
+
+- Summary banner (Guidance OFF vs ON counts and +N privacy findings)
+- Helper text explaining each mode
+- **New with Guidance** badges on findings that only appear when guidance is enabled
+- Problems panel entries tagged `VibeCodeGuide · New with Guidance` for the same items
+
+**Code change impact demo** (automatic — no separate snapshot commands):
+
+1. Open `samples/privacy_showcase_vulnerable.py` and run **VibeCodeGuide: Analyze File**
+2. Comment out or fix a line (e.g. `# print(f"Login for {email}")`) and **save** (Cmd+S)
+3. Run **Analyze File** again — the extension compares with your previous run on this file
+
+The **Analysis changes** panel and output show **resolved**, **introduced**, and **unchanged** findings; Problems tags new issues as `New since last analysis`.
+
+Settings: **VibeCodeGuide**
+
+| Setting | Description |
+| ------- | ----------- |
+| `vibecodeguide.enablePrivacySecurityGuidance` | **Enable Privacy & Security Guidance** (default: on) |
+| `vibecodeguide.securityApiUrl` | Analyzer API base URL |
+| `vibecodeguide.minSeverity` | Minimum reported severity |
+| `vibecodeguide.requestTimeoutMs` | HTTP timeout |
+| `vibecodeguide.openaiModel` | OpenAI model for secure code generation |
+| `vibecodeguide.openaiBaseUrl` | OpenAI API base URL |
+| `vibecodeguide.autoAnalyzeGeneratedCode` | Auto-scan generated code after chat |
+
+Store your OpenAI API key via **VibeCodeGuide: Set OpenAI API Key** (saved in VS Code Secret Storage).
 
 ### Install permanently
 
@@ -281,8 +349,7 @@ Keep the API running on port 8000 while using the extension. Use **VibeCodeGuide
 
 ## Team
 
-| Name | Institution |
-|---|---|
+| Name                  | Institution                         |
+| --------------------- | ----------------------------------- |
 | Haylemicheal Mekonnen | Paris Lodron University of Salzburg |
-| Eslam Younis | Paris Lodron University of Salzburg |
-| Elbetel Reta | Paris Lodron University of Salzburg |
+| Daniel Wassie         | Paris Lodron University of Salzburg |
