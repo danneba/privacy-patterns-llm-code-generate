@@ -6,5 +6,7 @@ dist/
 build/
 .DS_Store
 .pytest_cache/
+benchmarks/data/BenchmarkPython/
+benchmark-report.json
 vscode-extension/node_modules/
 vscode-extension/out/
