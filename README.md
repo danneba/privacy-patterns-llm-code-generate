@@ -1,7 +1,7 @@
 # VibeCodeGuide: Security and Privacy Analyzer for AI-Generated Code
 
 > Privacy Engineering 2026 — Paris Lodron University of Salzburg  
-> **Authors:** Haylemicheal Mekonnen, Daniel
+> **Authors:** Haylemicheal Mekonnen, Daniel Wassie
 
 VibeCodeGuide helps teams review **vibe-coded** Python before it ships. It statically analyzes source for **security vulnerabilities** and **privacy risks**—unsafe execution, secrets, weak crypto, insecure APIs, sensitive data handling, and related issues common in AI-generated code.
 
@@ -266,6 +266,29 @@ privacy-patterns-llm-code-generate/
 pip install pytest
 pytest tests/ -v
 ```
+
+## Running Benchmarks
+
+Evaluate VibeCodeGuide on the internal labeled dataset and [OWASP Benchmark for Python](https://github.com/OWASP-Benchmark/BenchmarkPython):
+
+```bash
+# Clone OWASP benchmark and run both datasets
+vibecodeguide benchmark --clone-owasp
+
+# Internal security only
+vibecodeguide benchmark --dataset internal --scope security
+
+# Internal privacy (P01–P03)
+vibecodeguide benchmark --dataset internal --scope privacy
+
+# OWASP external SAST benchmark only
+vibecodeguide benchmark --dataset owasp
+
+# JSON report for papers / CI
+vibecodeguide benchmark --clone-owasp --format json --output benchmark-report.json
+```
+
+OWASP scoring covers mapped categories only (`sqli`, `cmdi`, `codeinj`, `hash`, `weakrand`, `deserialization`). Tests for XSS, XXE, path traversal, and other categories are reported as out-of-scope.
 
 ---
 
