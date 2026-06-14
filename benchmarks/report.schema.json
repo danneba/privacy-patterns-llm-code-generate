@@ -1,0 +1,69 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://vibecodeguide.local/schemas/benchmark-report-1.0.json",
+  "title": "VibeCodeGuide Benchmark Report",
+  "description": "Structured output from vibecodeguide benchmark --format json",
+  "type": "object",
+  "required": ["report_schema_version", "generated_at", "tool", "runs"],
+  "properties": {
+    "report_schema_version": { "type": "string", "const": "1.0" },
+    "generated_at": { "type": "string", "format": "date-time" },
+    "iteration_label": { "type": ["string", "null"] },
+    "tool": {
+      "type": "object",
+      "required": ["name", "version", "command"],
+      "properties": {
+        "name": { "type": "string" },
+        "version": { "type": "string" },
+        "command": { "type": "string" }
+      }
+    },
+    "runs": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/run" }
+    }
+  },
+  "$defs": {
+    "metrics": {
+      "type": "object",
+      "required": [
+        "true_positives",
+        "false_positives",
+        "false_negatives",
+        "precision",
+        "recall",
+        "f1"
+      ],
+      "properties": {
+        "true_positives": { "type": "integer", "minimum": 0 },
+        "false_positives": { "type": "integer", "minimum": 0 },
+        "false_negatives": { "type": "integer", "minimum": 0 },
+        "precision": { "type": "number", "minimum": 0, "maximum": 1 },
+        "recall": { "type": "number", "minimum": 0, "maximum": 1 },
+        "f1": { "type": "number", "minimum": 0, "maximum": 1 }
+      }
+    },
+    "run": {
+      "type": "object",
+      "required": ["run_id", "dataset", "scope", "summary", "metrics"],
+      "properties": {
+        "run_id": { "type": "string" },
+        "dataset": { "enum": ["internal", "owasp"] },
+        "scope": { "enum": ["security", "privacy", "all"] },
+        "summary": { "type": "object" },
+        "metrics": { "$ref": "#/$defs/metrics" },
+        "methodology": { "type": "object" },
+        "categories": { "type": "array" },
+        "failures": {
+          "type": "object",
+          "properties": {
+            "count": { "type": "integer" },
+            "items": { "type": "array" }
+          }
+        },
+        "samples": { "type": "array" },
+        "notes": { "type": "array", "items": { "type": "string" } }
+      }
+    }
+  }
+}

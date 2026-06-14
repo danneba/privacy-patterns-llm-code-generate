@@ -14,7 +14,7 @@ from security.core.scanner import Scanner
 from security.models.finding import Category, Finding
 
 Scope = Literal["security", "privacy", "all"]
-DatasetName = Literal["internal", "owasp", "both"]
+DatasetName = Literal["internal", "owasp", "realvuln", "both", "all"]
 
 OWASP_REPO_URL = "https://github.com/OWASP-Benchmark/BenchmarkPython.git"
 DEFAULT_OWASP_PATH = Path(__file__).resolve().parent / "data" / "BenchmarkPython"
@@ -94,6 +94,36 @@ class OwaspTestEvaluation:
 
 
 @dataclass
+class RealVulnFindingEvaluation:
+    finding_id: str
+    repo_id: str
+    file: str
+    start_line: int
+    is_vulnerable: bool
+    primary_cwe: str
+    expected_category: str
+    matched: bool
+    matched_rule: str | None
+    scanner_line: int | None
+    passed: bool
+
+    def to_dict(self) -> dict:
+        return {
+            "finding_id": self.finding_id,
+            "repo_id": self.repo_id,
+            "file": self.file,
+            "start_line": self.start_line,
+            "is_vulnerable": self.is_vulnerable,
+            "primary_cwe": self.primary_cwe,
+            "expected_category": self.expected_category,
+            "matched": self.matched,
+            "matched_rule": self.matched_rule,
+            "scanner_line": self.scanner_line,
+            "passed": self.passed,
+        }
+
+
+@dataclass
 class CategoryMetrics:
     category: str
     test_count: int
@@ -116,28 +146,17 @@ class BenchmarkReport:
     samples: list[SampleEvaluation] = field(default_factory=list)
     owasp_tests: list[OwaspTestEvaluation] = field(default_factory=list)
     owasp_by_category: list[CategoryMetrics] = field(default_factory=list)
+    realvuln_findings: list[RealVulnFindingEvaluation] = field(default_factory=list)
+    realvuln_unmatched_alerts: int = 0
+    realvuln_repos_ready: int = 0
+    realvuln_repos_total: int = 0
     out_of_scope_count: int = 0
     notes: list[str] = field(default_factory=list)
 
     def to_dict(self) -> dict:
-        payload: dict = {
-            "dataset": self.dataset,
-            "scope": self.scope,
-            "sample_count": self.sample_count,
-            "metrics": self.counts.to_dict(),
-            "notes": self.notes,
-        }
-        if self.samples:
-            payload["samples"] = [sample.to_dict() for sample in self.samples]
-        if self.owasp_tests:
-            payload["owasp_by_category"] = [row.to_dict() for row in self.owasp_by_category]
-            payload["out_of_scope_count"] = self.out_of_scope_count
-            payload["owasp_failures"] = [
-                test.to_dict()
-                for test in self.owasp_tests
-                if not test.passed
-            ][:50]
-        return payload
+        from benchmarks.report_document import report_to_run_dict
+
+        return report_to_run_dict(self)
 
 
 def filter_internal_samples(scope: Scope) -> list[Sample]:
@@ -446,11 +465,16 @@ def run_benchmarks(
     owasp_path: Path = DEFAULT_OWASP_PATH,
     *,
     ensure_owasp: bool = True,
+    realvuln_path: Path | None = None,
+    realvuln_repo_ids: list[str] | None = None,
 ) -> list[BenchmarkReport]:
+    from benchmarks.realvuln.loader import DEFAULT_REALVULN_ROOT
+    from benchmarks.realvuln.runner import run_realvuln_benchmark
+
     reports: list[BenchmarkReport] = []
-    if dataset in ("internal", "both"):
+    if dataset in ("internal", "both", "all"):
         reports.append(run_internal_benchmark(scope=scope))
-    if dataset in ("owasp", "both"):
+    if dataset in ("owasp", "both", "all"):
         if scope == "privacy":
             raise ValueError(
                 "OWASP Benchmark for Python has no privacy labels. "
@@ -459,6 +483,17 @@ def run_benchmarks(
         if ensure_owasp:
             ensure_owasp_benchmark(owasp_path)
         reports.append(run_owasp_benchmark(owasp_path=owasp_path))
+    if dataset in ("realvuln", "all"):
+        if scope == "privacy":
+            raise ValueError(
+                "RealVuln has no privacy labels. Use --scope security for RealVuln evaluation."
+            )
+        reports.append(
+            run_realvuln_benchmark(
+                root=realvuln_path or DEFAULT_REALVULN_ROOT,
+                repo_ids=realvuln_repo_ids,
+            )
+        )
     return reports
 
 
@@ -496,7 +531,7 @@ def format_report_text(reports: list[BenchmarkReport]) -> str:
                     lines.append(f"        forbidden: {', '.join(sample.forbidden_hits)}")
             lines.append("")
 
-        if report.owasp_by_category:
+        if report.owasp_by_category and report.dataset == "owasp":
             lines.append("OWASP by category:")
             for row in report.owasp_by_category:
                 lines.append(
@@ -513,6 +548,33 @@ def format_report_text(reports: list[BenchmarkReport]) -> str:
                     lines.append(
                         f"  {test.test_name} [{test.category}, {expected}] "
                         f"hits={test.relevant_hits or test.detected_rules[:3]}"
+                    )
+            lines.append("")
+
+        if report.dataset == "realvuln":
+            if report.realvuln_repos_total:
+                lines.append(
+                    f"Repos ready: {report.realvuln_repos_ready} / {report.realvuln_repos_total}"
+                )
+            if report.realvuln_unmatched_alerts:
+                lines.append(f"Unmatched scanner alerts (FP): {report.realvuln_unmatched_alerts}")
+            if report.owasp_by_category:
+                lines.append("RealVuln by expected_category:")
+                for row in report.owasp_by_category:
+                    lines.append(
+                        f"  {row.category:16} n={row.test_count:3}  "
+                        f"P={row.counts.precision:.1%}  R={row.counts.recall:.1%}  "
+                        f"F1={row.counts.f1:.1%}"
+                    )
+            failures = [item for item in report.realvuln_findings if not item.passed]
+            if failures:
+                lines.append("")
+                lines.append(f"Failed RealVuln findings (showing up to 10 of {len(failures)}):")
+                for item in failures[:10]:
+                    expected = "vulnerable" if item.is_vulnerable else "safe"
+                    lines.append(
+                        f"  {item.finding_id} [{item.expected_category}, {expected}] "
+                        f"rule={item.matched_rule}"
                     )
             lines.append("")
 

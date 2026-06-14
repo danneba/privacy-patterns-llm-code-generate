@@ -2,6 +2,7 @@ import ast
 from typing import List
 
 from security.models.finding import Finding, Severity
+from security.rules.security.ast_helpers import is_test_support_path
 from security.rules.security.base import SecurityRule
 
 _REQUESTS_METHODS = frozenset({
@@ -23,6 +24,8 @@ class DisabledTlsVerificationRule(SecurityRule):
     severity = Severity.HIGH
 
     def check(self, tree: ast.AST, file_path: str, source_lines: List[str]) -> List[Finding]:
+        if is_test_support_path(file_path):
+            return []
         findings = []
         requests_aliases: set[str] = set()
         direct_methods: set[str] = set()

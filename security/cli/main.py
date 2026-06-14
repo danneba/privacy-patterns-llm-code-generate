@@ -3,6 +3,8 @@ import sys
 import argparse
 from pathlib import Path
 
+from benchmarks.report_document import build_benchmark_document
+from benchmarks.realvuln.loader import DEFAULT_REALVULN_ROOT, ensure_realvuln_labels, load_realvuln_repos
 from benchmarks.runner import (
     DEFAULT_OWASP_PATH,
     check_owasp_benchmark,
@@ -79,13 +81,13 @@ def _build_parser() -> argparse.ArgumentParser:
 
     benchmark = sub.add_parser(
         "benchmark",
-        help="Evaluate the analyzer on internal and/or OWASP Benchmark for Python.",
+        help="Evaluate the analyzer on internal, OWASP, and/or RealVuln benchmarks.",
     )
     benchmark.add_argument(
         "--dataset",
-        choices=["internal", "owasp", "both"],
+        choices=["internal", "owasp", "realvuln", "both", "all"],
         default="both",
-        help="Which benchmark dataset to run (default: both).",
+        help="Which benchmark dataset to run (default: both = internal + OWASP).",
     )
     benchmark.add_argument(
         "--scope",
@@ -116,6 +118,29 @@ def _build_parser() -> argparse.ArgumentParser:
         "--force-clone-owasp",
         action="store_true",
         help="Delete and re-clone OWASP Benchmark for Python.",
+    )
+    benchmark.add_argument(
+        "--iteration-label",
+        metavar="LABEL",
+        help="Optional label stored in JSON reports (e.g. iteration-1-baseline).",
+    )
+    benchmark.add_argument(
+        "--realvuln-path",
+        metavar="DIR",
+        help="Path to RealVuln data root (default: benchmarks/data/RealVuln).",
+    )
+    benchmark.add_argument(
+        "--realvuln-repo",
+        metavar="ID",
+        action="append",
+        dest="realvuln_repos",
+        help="Limit RealVuln evaluation to specific repo_id (repeatable).",
+    )
+    benchmark.add_argument(
+        "--realvuln-max-repos",
+        type=int,
+        metavar="N",
+        help="Evaluate only the first N RealVuln repos (after filtering).",
     )
 
     return parser
@@ -192,7 +217,7 @@ def _run_demo(args: argparse.Namespace) -> int:
 
 
 def _prepare_owasp_benchmark(args: argparse.Namespace, owasp_path: Path) -> None:
-    if args.dataset not in ("owasp", "both"):
+    if args.dataset not in ("owasp", "both", "all"):
         return
 
     if args.force_clone_owasp:
@@ -216,16 +241,35 @@ def _prepare_owasp_benchmark(args: argparse.Namespace, owasp_path: Path) -> None
     raise FileNotFoundError(status.detail)
 
 
+def _prepare_realvuln_benchmark(args: argparse.Namespace, realvuln_path: Path) -> list[str] | None:
+    if args.dataset not in ("realvuln", "all"):
+        return None
+
+    ensure_realvuln_labels(realvuln_path)
+
+    repo_ids = list(args.realvuln_repos) if args.realvuln_repos else None
+    if repo_ids is None and args.realvuln_max_repos:
+        repo_ids = [
+            repo.repo_id
+            for repo in load_realvuln_repos(realvuln_path)[: args.realvuln_max_repos]
+        ]
+    return repo_ids
+
+
 def _run_benchmark(args: argparse.Namespace) -> int:
     owasp_path = Path(args.owasp_path) if args.owasp_path else DEFAULT_OWASP_PATH
+    realvuln_path = Path(args.realvuln_path) if args.realvuln_path else DEFAULT_REALVULN_ROOT
 
     try:
         _prepare_owasp_benchmark(args, owasp_path)
+        realvuln_repo_ids = _prepare_realvuln_benchmark(args, realvuln_path)
         reports = run_benchmarks(
             dataset=args.dataset,
             scope=args.scope,
             owasp_path=owasp_path,
             ensure_owasp=False,
+            realvuln_path=realvuln_path,
+            realvuln_repo_ids=realvuln_repo_ids,
         )
     except FileNotFoundError as exc:
         print(f"vibecodeguide: error: {exc}", file=sys.stderr)
@@ -239,7 +283,14 @@ def _run_benchmark(args: argparse.Namespace) -> int:
         return 2
 
     if args.format == "json":
-        output = json.dumps([report.to_dict() for report in reports], indent=2)
+        output = json.dumps(
+            build_benchmark_document(
+                reports,
+                iteration_label=args.iteration_label,
+                command=" ".join(sys.argv),
+            ),
+            indent=2,
+        )
     else:
         output = format_report_text(reports)
 
@@ -258,6 +309,10 @@ def _run_benchmark(args: argparse.Namespace) -> int:
         test.passed is False
         for report in reports
         for test in report.owasp_tests
+    ) or any(
+        item.passed is False
+        for report in reports
+        for item in report.realvuln_findings
     )
     return 1 if any_failures else 0
 
