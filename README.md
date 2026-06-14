@@ -19,6 +19,7 @@ VibeCodeGuide helps teams review **vibe-coded** Python before it ships. It stati
 - [Example Output](#example-output)
 - [Project Structure](#project-structure)
 - [Running Tests](#running-tests)
+- [Benchmark Evaluation](#benchmark-evaluation)
 - [VS Code Extension](#vs-code-extension)
 - [Team](#team)
 
@@ -74,19 +75,30 @@ The analyzer lives under `security/` in this repository (Python package). The VS
 
 ## Current Stage
 
-VibeCodeGuide is in an **early but working** stage.
+VibeCodeGuide is a **working research prototype** with CLI, REST API, VS Code extension, and benchmark evaluation on OWASP and RealVuln datasets.
 
 **Available now:**
 
-- Static **security** rules (VG001–VG013) for Python
+- Static **security** rules (VG001–VG021) for Python
 - **Privacy** rule pack (PG001–PG008) mapped to Hoepman privacy design strategies
 - `PRIVACY` finding category in CLI/JSON reports with strategy metadata
 - CLI (`vibecodeguide scan`), REST API (`security.api`), and VS Code extension
-- Benchmark dataset for measuring detection quality
+- Benchmark harness with structured JSON reports (schema v1)
+
+**Evaluation results** (see [Benchmark Evaluation](#benchmark-evaluation) for methodology):
+
+| Benchmark | Scope | F1 | Precision | Recall |
+|-----------|-------|-----|-----------|--------|
+| [OWASP Benchmark for Python](https://github.com/OWASP-Benchmark/BenchmarkPython) | 620 in-scope tests | **98.3%** | 96.6% | 100% |
+| [RealVuln](https://huggingface.co/datasets/Kolega-Dev/RealVuln) | 396 in-scope findings | **56.4%** | 74.5% | 45.4% |
+
+RealVuln headline metrics cover `injection` and `data_exposure` categories only (same scoping principle as OWASP). XSS, authentication, and session-configuration findings are reported as out-of-scope.
+
+**Interpretation:** RealVuln **56.4% F1** (iteration 7) is a **development-benchmark result** — RealVuln informed rule design (VG014–VG021) and final scoring on the same 23-repo corpus. It measures fit to RealVuln’s in-scope labels, not unbiased performance on unseen repositories. OWASP **98.3% F1** provides independent signal for the core rule set (VG001–VG013) on synthetic tests.
 
 **Planned:**
 
-- Broader language and framework coverage
+- Additional rule families (authorization, template analysis)
 - CI templates and policy gates
 
 ---
@@ -138,7 +150,7 @@ vibecodeguide scan ./project --output report.txt
 
 ### Privacy & Security Guidance (baseline vs guided)
 
-**Baseline** (`--no-guidance`): security rules only (VG001–VG013).
+**Baseline** (`--no-guidance`): security rules only (VG001–VG021).
 
 **Guided** (default): security + privacy guidance module (PG001–PG008, Hoepman strategies).
 
@@ -193,6 +205,14 @@ Side-by-side comparison: `POST /analyze/demo`.
 | VG011   | TLS Verification Disabled                 | HIGH     | Security           |
 | VG012   | Debug Mode Enabled                        | MEDIUM   | Security           |
 | VG013   | Dynamic SQL Query Construction            | HIGH     | Security           |
+| VG014   | Shell Wrapper Call                        | HIGH     | Security           |
+| VG015   | Server-Side Template Injection            | HIGH     | Security           |
+| VG016   | Path Traversal                            | HIGH     | Security           |
+| VG017   | Server-Side Request Forgery               | HIGH     | Security           |
+| VG018   | XML External Entity (XXE)                 | HIGH     | Security           |
+| VG019   | Cleartext Credential Handling             | HIGH     | Security           |
+| VG020   | Verbose Error Disclosure                  | MEDIUM   | Security           |
+| VG021   | Unsafe File Write                         | HIGH     | Security           |
 
 ### Privacy rules
 
@@ -246,7 +266,7 @@ privacy-patterns-llm-code-generate/
 │   ├── api/               FastAPI service for editor/HTTP clients
 │   ├── cli/               vibecodeguide CLI
 │   ├── core/              Scanner orchestration
-│   ├── rules/security/    Rule implementations VG001–VG013
+│   ├── rules/security/    Rule implementations VG001–VG021
 │   ├── models/            Finding and scan result types
 │   └── reporters/         Text and JSON formatters
 ├── privacy/               Privacy rule pack (PG001–PG008, Hoepman strategies)
@@ -263,32 +283,64 @@ privacy-patterns-llm-code-generate/
 ## Running Tests
 
 ```bash
+python3 -m venv .venv
+source .venv/bin/activate   # Windows: .venv\Scripts\activate
 pip install pytest
-pytest tests/ -v
+pip install -e .
+
+PYTHONPATH=. pytest tests/ -v
 ```
 
-## Running Benchmarks
+---
 
-Evaluate VibeCodeGuide on the internal labeled dataset and [OWASP Benchmark for Python](https://github.com/OWASP-Benchmark/BenchmarkPython):
+## Benchmark Evaluation
+
+VibeCodeGuide is evaluated on three datasets:
+
+| Dataset | Description | Scoring scope |
+|---------|-------------|---------------|
+| **Internal** | Labeled samples in `benchmarks/dataset.py` | Security and privacy rules |
+| **OWASP** | [OWASP Benchmark for Python v0.1](https://github.com/OWASP-Benchmark/BenchmarkPython) — 1,230 synthetic tests | 620 tests in mapped categories (`sqli`, `cmdi`, `codeinj`, `hash`, `weakrand`, `deserialization`) |
+| **RealVuln** | [RealVuln](https://huggingface.co/datasets/Kolega-Dev/RealVuln) — 26 real vulnerable Python applications | 396 findings in `injection` and `data_exposure` (728 total; remaining categories out-of-scope) |
+
+Reports use JSON schema v1 (`benchmarks/report.schema.json`). Full workflow: **`benchmarks/REPORTS.md`**.
+
+### Run benchmarks
 
 ```bash
-# Clone OWASP benchmark and run both datasets
-vibecodeguide benchmark --clone-owasp
+source .venv/bin/activate
 
-# Internal security only
-vibecodeguide benchmark --dataset internal --scope security
+# OWASP only
+PYTHONPATH=. python3 -m security.cli.main benchmark \
+  --dataset owasp \
+  --clone-owasp \
+  --format json \
+  --output benchmarks/reports/owasp-latest.json
 
-# Internal privacy (P01–P03)
-vibecodeguide benchmark --dataset internal --scope privacy
+# RealVuln (repos must be cloned under benchmarks/data/RealVuln/repos/)
+PYTHONPATH=. python3 -m security.cli.main benchmark \
+  --dataset realvuln \
+  --format json \
+  --iteration-label realvuln-iteration-7 \
+  --output benchmarks/reports/realvuln-latest.json
 
-# OWASP external SAST benchmark only
-vibecodeguide benchmark --dataset owasp
-
-# JSON report for papers / CI
-vibecodeguide benchmark --clone-owasp --format json --output benchmark-report.json
+# Both datasets
+PYTHONPATH=. python3 -m security.cli.main benchmark \
+  --dataset all \
+  --format json \
+  --output benchmarks/reports/verify-latest.json
 ```
 
-OWASP scoring covers mapped categories only (`sqli`, `cmdi`, `codeinj`, `hash`, `weakrand`, `deserialization`). Tests for XSS, XXE, path traversal, and other categories are reported as out-of-scope.
+Exit code `1` after a benchmark run indicates some tests or findings failed — that is expected when metrics are below 100%.
+
+### Methodology notes
+
+- **OWASP:** Categories without rule mappings (XSS, XXE, path traversal, etc.) are excluded from scored metrics — 610 of 1,230 tests are out-of-scope.
+- **RealVuln:** Categories without rule mappings (XSS, auth, session configuration, other) are excluded — 332 of 728 findings are out-of-scope. Repos are cloned manually per [Real-Vuln-Benchmark](https://github.com/kolega-ai/Real-Vuln-Benchmark). Headline metrics use label **`realvuln-iteration-7`** (21 rules; rule families fixed after iteration 6).
+- **Matching:** File path + CWE in acceptable set + line tolerance ±10. Unmatched scanner alerts count as false positives.
+- **RealVuln interpretation:** Same corpus used for iterative rule development and final evaluation; no repository holdout was performed. Reported F1 is in-corpus fit, not an estimate for unseen apps.
+
+Detailed iteration history: `docs/internal/benchmark-iterations.md` (local, gitignored).
 
 ---
 
@@ -320,7 +372,7 @@ Open `vscode-extension/` in VS Code, press **F5**, then on a Python file use:
 - **VibeCodeGuide: Check API Health**
 - **VibeCodeGuide: Set OpenAI API Key**
 
-The **Secure Code Chat** panel uses OpenAI to generate Python code guided by OWASP Top 10, CWE rules (VG001–VG013), and privacy patterns. Generated code is automatically scanned by the analyzer; use **Fix Issues** to regenerate a compliant version.
+The **Secure Code Chat** panel uses OpenAI to generate Python code guided by OWASP Top 10, CWE rules (VG001–VG021), and privacy patterns. Generated code is automatically scanned by the analyzer; use **Fix Issues** to regenerate a compliant version.
 
 Findings appear in **Problems** (security and privacy, with Hoepman strategy labels on privacy issues); full reports in the **VibeCodeGuide** output channel include privacy score and per-category counts.
 

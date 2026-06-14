@@ -2,6 +2,7 @@ import ast
 from typing import List
 
 from security.models.finding import Finding, Severity
+from security.rules.security.ast_helpers import should_suppress_pickle_load
 from security.rules.security.base import SecurityRule
 
 _PICKLE_MODULES = frozenset({"pickle", "cPickle"})
@@ -19,7 +20,6 @@ class PickleRule(SecurityRule):
 
     def check(self, tree: ast.AST, file_path: str, source_lines: List[str]) -> List[Finding]:
         findings = []
-        # Track functions directly imported from pickle
         direct_aliases: dict[str, str] = {}  # alias → "load" or "loads"
 
         for node in ast.walk(tree):
@@ -46,6 +46,8 @@ class PickleRule(SecurityRule):
                 func_name = f"pickle.{direct_aliases[func.id]}"
 
             if func_name:
+                if should_suppress_pickle_load(tree, node):
+                    continue
                 findings.append(Finding(
                     rule_id=self.rule_id,
                     title=self.title,

@@ -2,11 +2,13 @@ import ast
 from typing import List
 
 from security.models.finding import Finding, Severity
+from security.rules.security.ast_helpers import is_dev_seed_path, is_test_support_path
 from security.rules.security.base import SecurityRule
 
 _RANDOM_FUNCTIONS = frozenset({
     "random", "randint", "randrange", "choice", "choices",
     "uniform", "shuffle", "sample", "getrandbits",
+    "normalvariate", "randbytes",
 })
 
 
@@ -20,6 +22,8 @@ class InsecureRandomRule(SecurityRule):
     severity = Severity.MEDIUM
 
     def check(self, tree: ast.AST, file_path: str, source_lines: List[str]) -> List[Finding]:
+        if is_test_support_path(file_path) or is_dev_seed_path(file_path):
+            return []
         findings = []
         has_random_import = False
         direct_aliases: dict[str, str] = {}  # alias → original function name

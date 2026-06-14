@@ -64,3 +64,18 @@ def test_check_owasp_benchmark_ready():
         assert status.test_file_count >= 1200
     else:
         assert status.state in ("missing", "incomplete")
+
+
+def test_benchmark_report_document_shape():
+    from benchmarks.report_document import build_benchmark_document
+
+    report = run_internal_benchmark(scope="security")
+    doc = build_benchmark_document([report], iteration_label="test-run")
+    assert doc["report_schema_version"] == "1.0"
+    assert doc["iteration_label"] == "test-run"
+    assert doc["tool"]["name"] == "VibeCodeGuide"
+    assert len(doc["runs"]) == 1
+    run = doc["runs"][0]
+    assert run["dataset"] == "internal"
+    assert "metrics" in run
+    assert "summary" in run

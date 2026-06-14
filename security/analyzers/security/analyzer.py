@@ -16,6 +16,14 @@ from security.rules.security.vg010_yaml_load import UnsafeYamlLoadRule
 from security.rules.security.vg011_tls_verify import DisabledTlsVerificationRule
 from security.rules.security.vg012_debug_mode import DebugModeRule
 from security.rules.security.vg013_sql_injection import SqlInjectionRule
+from security.rules.security.vg014_shell_wrapper import ShellWrapperCallRule
+from security.rules.security.vg015_ssti import ServerSideTemplateInjectionRule
+from security.rules.security.vg016_path_traversal import PathTraversalRule
+from security.rules.security.vg017_ssrf import ServerSideRequestForgeryRule
+from security.rules.security.vg018_xxe import XmlExternalEntityRule
+from security.rules.security.vg019_cleartext_credentials import CleartextCredentialHandlingRule
+from security.rules.security.vg020_error_disclosure import VerboseErrorDisclosureRule
+from security.rules.security.vg021_unsafe_file_write import UnsafeFileWriteRule
 from security.rules.security.metadata import enrich_security_finding
 
 _DEFAULT_RULES: List[SecurityRule] = [
@@ -32,6 +40,14 @@ _DEFAULT_RULES: List[SecurityRule] = [
     DisabledTlsVerificationRule(),
     DebugModeRule(),
     SqlInjectionRule(),
+    ShellWrapperCallRule(),
+    ServerSideTemplateInjectionRule(),
+    PathTraversalRule(),
+    ServerSideRequestForgeryRule(),
+    XmlExternalEntityRule(),
+    CleartextCredentialHandlingRule(),
+    VerboseErrorDisclosureRule(),
+    UnsafeFileWriteRule(),
 ]
 
 

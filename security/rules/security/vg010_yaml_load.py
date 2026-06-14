@@ -2,6 +2,7 @@ import ast
 from typing import List
 
 from security.models.finding import Finding, Severity
+from security.rules.security.ast_helpers import should_suppress_untrusted_data_load
 from security.rules.security.base import SecurityRule
 
 
@@ -32,6 +33,8 @@ class UnsafeYamlLoadRule(SecurityRule):
             if not self._is_yaml_load_call(node, yaml_aliases, load_aliases):
                 continue
             if self._has_safe_loader(node):
+                continue
+            if should_suppress_untrusted_data_load(tree, node):
                 continue
 
             findings.append(Finding(

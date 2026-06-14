@@ -2,6 +2,7 @@ import ast
 from typing import List
 
 from security.models.finding import Finding, Severity
+from security.rules.security.ast_helpers import should_suppress_code_injection
 from security.rules.security.base import SecurityRule
 
 
@@ -19,6 +20,8 @@ class EvalUsageRule(SecurityRule):
                 and isinstance(node.func, ast.Name)
                 and node.func.id == "eval"
             ):
+                if should_suppress_code_injection(tree, node):
+                    continue
                 findings.append(Finding(
                     rule_id=self.rule_id,
                     title=self.title,

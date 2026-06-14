@@ -2,6 +2,7 @@ import ast
 from typing import List
 
 from security.models.finding import Finding, Severity
+from security.rules.security.ast_helpers import collect_os_shell_import_aliases
 from security.rules.security.base import SecurityRule
 
 _OS_SHELL_FUNCS = {"os.system", "os.popen", "os.execv", "os.execve"}
@@ -26,21 +27,26 @@ class OsShellRule(SecurityRule):
 
     def check(self, tree: ast.AST, file_path: str, source_lines: List[str]) -> List[Finding]:
         findings = []
+        import_aliases = collect_os_shell_import_aliases(tree)
         for node in ast.walk(tree):
-            if (
-                isinstance(node, ast.Call)
-                and isinstance(node.func, ast.Attribute)
-                and _full_attr(node.func) in _OS_SHELL_FUNCS
-            ):
+            if not isinstance(node, ast.Call):
+                continue
+            name = None
+            if isinstance(node.func, ast.Attribute) and _full_attr(node.func) in _OS_SHELL_FUNCS:
                 name = _full_attr(node.func)
-                findings.append(Finding(
-                    rule_id=self.rule_id,
-                    title=self.title,
-                    message=f"Call to '{name}()' can execute arbitrary shell commands.",
-                    severity=self.severity,
-                    file=file_path,
-                    line=node.lineno,
-                    suggestion="Use subprocess with a list argument (not shell=True) and validate inputs.",
-                    snippet=self._snippet(source_lines, node.lineno),
-                ))
+            elif isinstance(node.func, ast.Name) and node.func.id in import_aliases:
+                name = f"os.{node.func.id}"
+            if name:
+                findings.append(
+                    Finding(
+                        rule_id=self.rule_id,
+                        title=self.title,
+                        message=f"Call to '{name}()' can execute arbitrary shell commands.",
+                        severity=self.severity,
+                        file=file_path,
+                        line=node.lineno,
+                        suggestion="Use subprocess with a list argument (not shell=True) and validate inputs.",
+                        snippet=self._snippet(source_lines, node.lineno),
+                    )
+                )
         return findings

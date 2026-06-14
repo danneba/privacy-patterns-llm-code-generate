@@ -4,7 +4,11 @@ from __future__ import annotations
 
 OWASP_CATEGORY_RULES: dict[str, frozenset[str]] = {
     "sqli": frozenset({"sql_query_construction"}),
-    "cmdi": frozenset({"subprocess_shell_true", "os_shell_execution"}),
+    "cmdi": frozenset({
+        "subprocess_shell_true",
+        "os_shell_execution",
+        "subprocess_shell_command_injection",
+    }),
     "codeinj": frozenset({"eval_exec_usage"}),
     "hash": frozenset({"weak_hash_algorithm"}),
     "weakrand": frozenset({"insecure_random"}),
