@@ -1,6 +1,8 @@
 # Benchmark reports
 
-Structured evaluation outputs are written locally under `benchmarks/reports/` (gitignored). Regenerate them after rule changes; they are not committed to the repository.
+Structured evaluation outputs are written as JSON under `benchmarks/reports/` (committed as `*-latest.json`). Regenerate them after rule changes.
+
+By default, `vibecodeguide benchmark` writes JSON to `benchmarks/reports/<dataset>-latest.json` (e.g. `owasp-latest.json` for `--dataset owasp`). Use `--format text` for a terminal summary or `--output` for a custom path.
 
 ## Headline results (iteration 7)
 
@@ -25,9 +27,7 @@ Human-readable iteration history: `docs/internal/benchmark-iterations.md` (gitig
 ```bash
 PYTHONPATH=. python3 -m security.cli.main benchmark \
   --dataset owasp \
-  --format json \
-  --iteration-label owasp-iteration-2 \
-  --output benchmarks/reports/owasp-latest.json
+  --iteration-label owasp-iteration-2
 ```
 
 Optional: clone the OWASP dataset first with `--clone-owasp`.
@@ -39,9 +39,7 @@ Labels download from Hugging Face on first run. Clone vulnerable repos manually 
 ```bash
 PYTHONPATH=. python3 -m security.cli.main benchmark \
   --dataset realvuln \
-  --format json \
-  --iteration-label realvuln-iteration-7 \
-  --output benchmarks/reports/realvuln-latest.json
+  --iteration-label realvuln-iteration-7
 ```
 
 ## Quick metrics

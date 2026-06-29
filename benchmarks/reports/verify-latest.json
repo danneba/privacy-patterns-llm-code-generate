@@ -1,0 +1,1867 @@
+{
+  "report_schema_version": "1.0",
+  "generated_at": "2026-06-14T17:06:56+00:00",
+  "tool": {
+    "name": "VibeCodeGuide",
+    "version": "0.1.0",
+    "command": "/Users/dan/Documents/course/MasterComputer/Privacy Engineering/Privacy Project/privacy-patterns-llm-code-generate/security/cli/main.py benchmark --dataset all --format json --iteration-label verify-latest --output benchmarks/reports/verify-latest.json"
+  },
+  "iteration_label": "verify-latest",
+  "runs": [
+    {
+      "run_id": "internal-security",
+      "dataset": "internal",
+      "scope": "security",
+      "summary": {
+        "tests_in_scope": 7,
+        "tests_passed": 7,
+        "tests_failed": 0,
+        "pass_rate": 1.0
+      },
+      "metrics": {
+        "true_positives": 11,
+        "false_positives": 0,
+        "false_negatives": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      },
+      "notes": [
+        "Internal VibeCodeGuide benchmark (benchmarks/dataset.py).",
+        "Metrics are aggregated at rule level across labeled samples.",
+        "Security scope uses baseline mode (no privacy/smell/performance analyzers)."
+      ],
+      "samples": [
+        {
+          "sample_id": "S01",
+          "label": "Hardcoded API key + eval injection",
+          "expected": [
+            "eval_exec_usage",
+            "hardcoded_secret"
+          ],
+          "detected": [
+            "eval_exec_usage",
+            "hardcoded_secret"
+          ],
+          "missed": [],
+          "extra": [],
+          "forbidden_hits": [],
+          "parse_errors": [],
+          "passed": true
+        },
+        {
+          "sample_id": "S03",
+          "label": "Shell injection via subprocess + os.system",
+          "expected": [
+            "os_shell_execution",
+            "subprocess_shell_true"
+          ],
+          "detected": [
+            "os_shell_execution",
+            "subprocess_shell_true"
+          ],
+          "missed": [],
+          "extra": [],
+          "forbidden_hits": [],
+          "parse_errors": [],
+          "passed": true
+        },
+        {
+          "sample_id": "S04",
+          "label": "MD5 password hashing",
+          "expected": [
+            "weak_hash_algorithm"
+          ],
+          "detected": [
+            "weak_hash_algorithm"
+          ],
+          "missed": [],
+          "extra": [],
+          "forbidden_hits": [],
+          "parse_errors": [],
+          "passed": true
+        },
+        {
+          "sample_id": "S06",
+          "label": "Unsafe pickle deserialization",
+          "expected": [
+            "unsafe_deserialization"
+          ],
+          "detected": [
+            "unsafe_deserialization"
+          ],
+          "missed": [],
+          "extra": [],
+          "forbidden_hits": [],
+          "parse_errors": [],
+          "passed": true
+        },
+        {
+          "sample_id": "S07",
+          "label": "assert used for input validation",
+          "expected": [
+            "assert_used_for_validation"
+          ],
+          "detected": [
+            "assert_used_for_validation"
+          ],
+          "missed": [],
+          "extra": [],
+          "forbidden_hits": [],
+          "parse_errors": [],
+          "passed": true
+        },
+        {
+          "sample_id": "S10",
+          "label": "Clean baseline (well-written code)",
+          "expected": [],
+          "detected": [],
+          "missed": [],
+          "extra": [],
+          "forbidden_hits": [],
+          "parse_errors": [],
+          "passed": true
+        },
+        {
+          "sample_id": "S11",
+          "label": "Unsafe YAML, TLS bypass, debug mode, and SQL construction",
+          "expected": [
+            "debug_mode_enabled",
+            "sql_query_construction",
+            "tls_verification_disabled",
+            "unsafe_yaml_load"
+          ],
+          "detected": [
+            "debug_mode_enabled",
+            "sql_query_construction",
+            "tls_verification_disabled",
+            "unsafe_yaml_load"
+          ],
+          "missed": [],
+          "extra": [],
+          "forbidden_hits": [],
+          "parse_errors": [],
+          "passed": true
+        }
+      ]
+    },
+    {
+      "run_id": "owasp-security",
+      "dataset": "owasp",
+      "scope": "security",
+      "summary": {
+        "tests_total_in_benchmark": 1230,
+        "tests_in_scope": 620,
+        "tests_out_of_scope": 610,
+        "tests_passed": 612,
+        "tests_failed": 8,
+        "pass_rate": 0.9871
+      },
+      "metrics": {
+        "true_positives": 226,
+        "false_positives": 8,
+        "false_negatives": 0,
+        "precision": 0.9658,
+        "recall": 1.0,
+        "f1": 0.9826
+      },
+      "notes": [
+        "External OWASP Benchmark for Python v0.1.",
+        "Scores only categories mapped to VibeCodeGuide security rules (cmdi, codeinj, deserialization, hash, sqli, weakrand).",
+        "Skipped 610 out-of-scope tests (xss, xxe, pathtraver, etc.).",
+        "Source: https://github.com/OWASP-Benchmark/BenchmarkPython.git"
+      ],
+      "methodology": {
+        "benchmark_name": "OWASP Benchmark for Python",
+        "benchmark_version": "0.1",
+        "benchmark_repository": "https://github.com/OWASP-Benchmark/BenchmarkPython.git",
+        "scoring_unit": "test_case",
+        "in_scope_categories": [
+          "cmdi",
+          "codeinj",
+          "deserialization",
+          "hash",
+          "sqli",
+          "weakrand"
+        ],
+        "category_rule_mapping": {
+          "cmdi": [
+            "os_shell_execution",
+            "subprocess_shell_command_injection",
+            "subprocess_shell_true"
+          ],
+          "codeinj": [
+            "eval_exec_usage"
+          ],
+          "deserialization": [
+            "unsafe_deserialization",
+            "unsafe_yaml_load"
+          ],
+          "hash": [
+            "weak_hash_algorithm"
+          ],
+          "sqli": [
+            "sql_query_construction"
+          ],
+          "weakrand": [
+            "insecure_random"
+          ]
+        },
+        "out_of_scope_note": "Categories without VibeCodeGuide rule mappings (e.g. XSS, XXE, path traversal) are excluded from scored metrics.",
+        "analyzer_mode": "security baseline (privacy/smell/performance disabled)",
+        "definitions": {
+          "true_positive": "Labeled vulnerable test with at least one mapped rule detected.",
+          "false_negative": "Labeled vulnerable test with no mapped rule detected.",
+          "false_positive": "Labeled safe test with at least one mapped rule detected.",
+          "precision": "TP / (TP + FP)",
+          "recall": "TP / (TP + FN)",
+          "f1": "2 * precision * recall / (precision + recall)"
+        }
+      },
+      "categories": [
+        {
+          "category": "cmdi",
+          "test_count": 20,
+          "metrics": {
+            "true_positives": 13,
+            "false_positives": 2,
+            "false_negatives": 0,
+            "precision": 0.8667,
+            "recall": 1.0,
+            "f1": 0.9286
+          }
+        },
+        {
+          "category": "codeinj",
+          "test_count": 53,
+          "metrics": {
+            "true_positives": 20,
+            "false_positives": 2,
+            "false_negatives": 0,
+            "precision": 0.9091,
+            "recall": 1.0,
+            "f1": 0.9524
+          }
+        },
+        {
+          "category": "deserialization",
+          "test_count": 54,
+          "metrics": {
+            "true_positives": 18,
+            "false_positives": 4,
+            "false_negatives": 0,
+            "precision": 0.8182,
+            "recall": 1.0,
+            "f1": 0.9
+          }
+        },
+        {
+          "category": "hash",
+          "test_count": 151,
+          "metrics": {
+            "true_positives": 71,
+            "false_positives": 0,
+            "false_negatives": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0
+          }
+        },
+        {
+          "category": "sqli",
+          "test_count": 16,
+          "metrics": {
+            "true_positives": 5,
+            "false_positives": 0,
+            "false_negatives": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0
+          }
+        },
+        {
+          "category": "weakrand",
+          "test_count": 326,
+          "metrics": {
+            "true_positives": 99,
+            "false_positives": 0,
+            "false_negatives": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0
+          }
+        }
+      ],
+      "failures": {
+        "count": 8,
+        "items": [
+          {
+            "test_name": "BenchmarkTest00424",
+            "category": "codeinj",
+            "cwe": "94",
+            "is_vulnerable": false,
+            "detected_rules": [
+              "eval_exec_usage"
+            ],
+            "relevant_hits": [
+              "eval_exec_usage"
+            ],
+            "parse_errors": [],
+            "passed": false
+          },
+          {
+            "test_name": "BenchmarkTest00826",
+            "category": "deserialization",
+            "cwe": "502",
+            "is_vulnerable": false,
+            "detected_rules": [
+              "unsafe_deserialization"
+            ],
+            "relevant_hits": [
+              "unsafe_deserialization"
+            ],
+            "parse_errors": [],
+            "passed": false
+          },
+          {
+            "test_name": "BenchmarkTest01096",
+            "category": "deserialization",
+            "cwe": "502",
+            "is_vulnerable": false,
+            "detected_rules": [
+              "unsafe_deserialization"
+            ],
+            "relevant_hits": [
+              "unsafe_deserialization"
+            ],
+            "parse_errors": [],
+            "passed": false
+          },
+          {
+            "test_name": "BenchmarkTest01098",
+            "category": "cmdi",
+            "cwe": "78",
+            "is_vulnerable": false,
+            "detected_rules": [
+              "subprocess_shell_true"
+            ],
+            "relevant_hits": [
+              "subprocess_shell_true"
+            ],
+            "parse_errors": [],
+            "passed": false
+          },
+          {
+            "test_name": "BenchmarkTest01164",
+            "category": "codeinj",
+            "cwe": "94",
+            "is_vulnerable": false,
+            "detected_rules": [
+              "eval_exec_usage"
+            ],
+            "relevant_hits": [
+              "eval_exec_usage"
+            ],
+            "parse_errors": [],
+            "passed": false
+          },
+          {
+            "test_name": "BenchmarkTest01172",
+            "category": "deserialization",
+            "cwe": "502",
+            "is_vulnerable": false,
+            "detected_rules": [
+              "unsafe_deserialization"
+            ],
+            "relevant_hits": [
+              "unsafe_deserialization"
+            ],
+            "parse_errors": [],
+            "passed": false
+          },
+          {
+            "test_name": "BenchmarkTest01173",
+            "category": "cmdi",
+            "cwe": "78",
+            "is_vulnerable": false,
+            "detected_rules": [
+              "subprocess_shell_true"
+            ],
+            "relevant_hits": [
+              "subprocess_shell_true"
+            ],
+            "parse_errors": [],
+            "passed": false
+          },
+          {
+            "test_name": "BenchmarkTest01230",
+            "category": "deserialization",
+            "cwe": "502",
+            "is_vulnerable": false,
+            "detected_rules": [
+              "unsafe_deserialization"
+            ],
+            "relevant_hits": [
+              "unsafe_deserialization"
+            ],
+            "parse_errors": [],
+            "passed": false
+          }
+        ]
+      }
+    },
+    {
+      "run_id": "realvuln-security",
+      "dataset": "realvuln",
+      "scope": "security",
+      "summary": {
+        "findings_total": 728,
+        "findings_passed": 233,
+        "findings_failed": 495,
+        "pass_rate": 0.3201,
+        "repos_ready": 23,
+        "repos_total": 26,
+        "unmatched_scanner_alerts": 70
+      },
+      "metrics": {
+        "true_positives": 125,
+        "false_positives": 70,
+        "false_negatives": 495,
+        "precision": 0.641,
+        "recall": 0.2016,
+        "f1": 0.3067
+      },
+      "notes": [
+        "RealVuln \u2014 real-world Python vulnerability benchmark (Hugging Face).",
+        "Source: https://huggingface.co/datasets/Kolega-Dev/RealVuln",
+        "Matching: repo-relative file path + CWE in acceptable_cwes + line \u00b110.",
+        "Unmatched scanner alerts count as false positives.",
+        "Scored rules only (assert/CWE-617 excluded \u2014 not in RealVuln ground truth).",
+        "Python-only static analysis; non-Python ground truth (e.g. HTML XSS) may score as FN.",
+        "Repos evaluated: 23 / 26.",
+        "Ground-truth findings in evaluated repos: 728.",
+        "Scanner alerts: 195 (70 unmatched).",
+        "Skipped repos (not cloned): realvuln-python-app (unavailable upstream), vulnerable-api (unavailable upstream), vulnerable-python-apps (unavailable upstream)"
+      ],
+      "methodology": {
+        "benchmark_name": "RealVuln",
+        "benchmark_repository": "https://huggingface.co/datasets/Kolega-Dev/RealVuln",
+        "scoring_unit": "ground_truth_finding",
+        "matching": {
+          "file_path": "repo-relative path must match",
+          "cwe": "scanner CWE must be in acceptable_cwes",
+          "line_tolerance": 10
+        },
+        "false_positive_sources": [
+          "Match to is_vulnerable=false ground truth entry",
+          "Scanner alert with no matching ground truth entry"
+        ],
+        "analyzer_mode": "security baseline (privacy/smell/performance disabled)",
+        "in_scope_rules": [
+          "debug_mode_enabled",
+          "eval_exec_usage",
+          "hardcoded_secret",
+          "insecure_random",
+          "os_shell_execution",
+          "server_side_template_injection",
+          "shell_wrapper_call",
+          "sql_query_construction",
+          "subprocess_shell_command_injection",
+          "subprocess_shell_true",
+          "tls_verification_disabled",
+          "unsafe_deserialization",
+          "unsafe_yaml_load",
+          "weak_hash_algorithm"
+        ],
+        "out_of_scope_note": "assert_used_for_validation (CWE-617) is excluded \u2014 RealVuln has no ground-truth labels for assert-based validation checks.",
+        "definitions": {
+          "true_positive": "Vulnerable GT finding matched by a scanner alert.",
+          "false_negative": "Vulnerable GT finding with no matching scanner alert.",
+          "false_positive": "Safe GT finding matched, or unmatched scanner alert.",
+          "precision": "TP / (TP + FP)",
+          "recall": "TP / (TP + FN)",
+          "f1": "2 * precision * recall / (precision + recall)"
+        }
+      },
+      "categories": [
+        {
+          "category": "auth",
+          "test_count": 106,
+          "metrics": {
+            "true_positives": 1,
+            "false_positives": 0,
+            "false_negatives": 102,
+            "precision": 1.0,
+            "recall": 0.0097,
+            "f1": 0.0192
+          }
+        },
+        {
+          "category": "data_exposure",
+          "test_count": 174,
+          "metrics": {
+            "true_positives": 50,
+            "false_positives": 0,
+            "false_negatives": 117,
+            "precision": 1.0,
+            "recall": 0.2994,
+            "f1": 0.4608
+          }
+        },
+        {
+          "category": "injection",
+          "test_count": 222,
+          "metrics": {
+            "true_positives": 64,
+            "false_positives": 0,
+            "false_negatives": 84,
+            "precision": 1.0,
+            "recall": 0.4324,
+            "f1": 0.6038
+          }
+        },
+        {
+          "category": "other",
+          "test_count": 54,
+          "metrics": {
+            "true_positives": 5,
+            "false_positives": 0,
+            "false_negatives": 47,
+            "precision": 1.0,
+            "recall": 0.0962,
+            "f1": 0.1754
+          }
+        },
+        {
+          "category": "session_config",
+          "test_count": 73,
+          "metrics": {
+            "true_positives": 5,
+            "false_positives": 0,
+            "false_negatives": 68,
+            "precision": 1.0,
+            "recall": 0.0685,
+            "f1": 0.1282
+          }
+        },
+        {
+          "category": "xss",
+          "test_count": 99,
+          "metrics": {
+            "true_positives": 0,
+            "false_positives": 0,
+            "false_negatives": 77,
+            "precision": 1.0,
+            "recall": 0.0,
+            "f1": 0.0
+          }
+        }
+      ],
+      "failures": {
+        "count": 495,
+        "items": [
+          {
+            "finding_id": "damn-vulnerable-flask-app-002",
+            "repo_id": "damn-vulnerable-flask-app",
+            "file": "app.py",
+            "start_line": 120,
+            "is_vulnerable": true,
+            "primary_cwe": "CWE-79",
+            "expected_category": "xss",
+            "matched": false,
+            "matched_rule": null,
+            "scanner_line": null,
+            "passed": false
+          },
+          {
+            "finding_id": "damn-vulnerable-flask-app-003",
+            "repo_id": "damn-vulnerable-flask-app",
+            "file": "app.py",
+            "start_line": 140,
+            "is_vulnerable": true,
+            "primary_cwe": "CWE-78",
+            "expected_category": "injection",
+            "matched": false,
+            "matched_rule": null,
+            "scanner_line": null,
+            "passed": false
+          },
+          {
+            "finding_id": "damn-vulnerable-flask-app-004",
+            "repo_id": "damn-vulnerable-flask-app",
+            "file": "app.py",
+            "start_line": 140,
+            "is_vulnerable": true,
+            "primary_cwe": "CWE-79",
+            "expected_category": "xss",
+            "matched": false,
+            "matched_rule": null,
+            "scanner_line": null,
+            "passed": false
+          },
+          {
+            "finding_id": "damn-vulnerable-flask-app-005",
+            "repo_id": "damn-vulnerable-flask-app",
+            "file": "app.py",
+            "start_line": 157,
+            "is_vulnerable": true,
+            "primary_cwe": "CWE-611",
+            "expected_category": "injection",
+            "matched": false,
+            "matched_rule": null,
+            "scanner_line": null,
+            "passed": false
+          },
+          {
+            "finding_id": "damn-vulnerable-flask-app-006",
+            "repo_id": "damn-vulnerable-flask-app",
+            "file": "app.py",
+            "start_line": 169,
+            "is_vulnerable": true,
+            "primary_cwe": "CWE-79",
+            "expected_category": "xss",
+            "matched": false,
+            "matched_rule": null,
+            "scanner_line": null,
+            "passed": false
+          },
+          {
+            "finding_id": "damn-vulnerable-flask-app-008",
+            "repo_id": "damn-vulnerable-flask-app",
+            "file": "app.py",
+            "start_line": 189,
+            "is_vulnerable": true,
+            "primary_cwe": "CWE-79",
+            "expected_category": "xss",
+            "matched": false,
+            "matched_rule": null,
+            "scanner_line": null,
+            "passed": false
+          },
+          {
+            "finding_id": "damn-vulnerable-flask-app-010",
+            "repo_id": "damn-vulnerable-flask-app",
+            "file": "app.py",
+            "start_line": 62,
+            "is_vulnerable": true,
+            "primary_cwe": "CWE-256",
+            "expected_category": "data_exposure",
+            "matched": false,
+            "matched_rule": null,
+            "scanner_line": null,
+            "passed": false
+          },
+          {
+            "finding_id": "damn-vulnerable-flask-app-012",
+            "repo_id": "damn-vulnerable-flask-app",
+            "file": "app.py",
+            "start_line": 111,
+            "is_vulnerable": true,
+            "primary_cwe": "CWE-306",
+            "expected_category": "auth",
+            "matched": false,
+            "matched_rule": null,
+            "scanner_line": null,
+            "passed": false
+          },
+          {
+            "finding_id": "damn-vulnerable-flask-app-013",
+            "repo_id": "damn-vulnerable-flask-app",
+            "file": "app.py",
+            "start_line": 132,
+            "is_vulnerable": true,
+            "primary_cwe": "CWE-306",
+            "expected_category": "auth",
+            "matched": false,
+            "matched_rule": null,
+            "scanner_line": null,
+            "passed": false
+          },
+          {
+            "finding_id": "damn-vulnerable-flask-app-014",
+            "repo_id": "damn-vulnerable-flask-app",
+            "file": "app.py",
+            "start_line": 152,
+            "is_vulnerable": true,
+            "primary_cwe": "CWE-306",
+            "expected_category": "auth",
+            "matched": false,
+            "matched_rule": null,
+            "scanner_line": null,
+            "passed": false
+          },
+          {
+            "finding_id": "damn-vulnerable-flask-app-015",
+            "repo_id": "damn-vulnerable-flask-app",
+            "file": "app.py",
+            "start_line": 185,
+            "is_vulnerable": true,
+            "primary_cwe": "CWE-306",
+            "expected_category": "auth",
+            "matched": false,
+            "matched_rule": null,
+            "scanner_line": null,
+            "passed": false
+          },
+          {
+            "finding_id": "dvga-003",
+            "repo_id": "dvga",
+            "file": "core/views.py",
+            "start_line": 210,
+            "is_vulnerable": true,
+            "primary_cwe": "CWE-918",
+            "expected_category": "other",
+            "matched": false,
+            "matched_rule": null,
+            "scanner_line": null,
+            "passed": false
+          },
+          {
+            "finding_id": "dvga-007",
+            "repo_id": "dvga",
+            "file": "core/helpers.py",
+            "start_line": 21,
+            "is_vulnerable": true,
+            "primary_cwe": "CWE-347",
+            "expected_category": "auth",
+            "matched": false,
+            "matched_rule": null,
+            "scanner_line": null,
+            "passed": false
+          },
+          {
+            "finding_id": "dvga-008",
+            "repo_id": "dvga",
+            "file": "templates/paste.html",
+            "start_line": 132,
+            "is_vulnerable": true,
+            "primary_cwe": "CWE-79",
+            "expected_category": "xss",
+            "matched": false,
+            "matched_rule": null,
+            "scanner_line": null,
+            "passed": false
+          },
+          {
+            "finding_id": "dvga-009",
+            "repo_id": "dvga",
+            "file": "templates/paste.html",
+            "start_line": 65,
+            "is_vulnerable": true,
+            "primary_cwe": "CWE-79",
+            "expected_category": "xss",
+            "matched": false,
+            "matched_rule": null,
+            "scanner_line": null,
+            "passed": false
+          },
+          {
+            "finding_id": "dvga-010",
+            "repo_id": "dvga",
+            "file": "core/helpers.py",
+            "start_line": 25,
+            "is_vulnerable": true,
+            "primary_cwe": "CWE-22",
+            "expected_category": "injection",
+            "matched": false,
+            "matched_rule": null,
+            "scanner_line": null,
+            "passed": false
+          },
+          {
+            "finding_id": "dvga-011",
+            "repo_id": "dvga",
+            "file": "core/view_override.py",
+            "start_line": 52,
+            "is_vulnerable": true,
+            "primary_cwe": "CWE-209",
+            "expected_category": "data_exposure",
+            "matched": false,
+            "matched_rule": null,
+            "scanner_line": null,
+            "passed": false
+          },
+          {
+            "finding_id": "dvga-012",
+            "repo_id": "dvga",
+            "file": "core/views.py",
+            "start_line": 385,
+            "is_vulnerable": true,
+            "primary_cwe": "CWE-862",
+            "expected_category": "auth",
+            "matched": false,
+            "matched_rule": null,
+            "scanner_line": null,
+            "passed": false
+          },
+          {
+            "finding_id": "dvga-013",
+            "repo_id": "dvga",
+            "file": "core/views.py",
+            "start_line": 140,
+            "is_vulnerable": true,
+            "primary_cwe": "CWE-639",
+            "expected_category": "auth",
+            "matched": false,
+            "matched_rule": null,
+            "scanner_line": null,
+            "passed": false
+          },
+          {
+            "finding_id": "dvga-014",
+            "repo_id": "dvga",
+            "file": "core/views.py",
+            "start_line": 164,
+            "is_vulnerable": true,
+            "primary_cwe": "CWE-639",
+            "expected_category": "auth",
+            "matched": false,
+            "matched_rule": null,
+            "scanner_line": null,
+            "passed": false
+          },
+          {
+            "finding_id": "dvga-015",
+            "repo_id": "dvga",
+            "file": "setup.py",
+            "start_line": 63,
+            "is_vulnerable": true,
+            "primary_cwe": "CWE-798",
+            "expected_category": "data_exposure",
+            "matched": false,
+            "matched_rule": null,
+            "scanner_line": null,
+            "passed": false
+          },
+          {
+            "finding_id": "dvga-016",
+            "repo_id": "dvga",
+            "file": "core/views.py",
+            "start_line": 61,
+            "is_vulnerable": true,
+            "primary_cwe": "CWE-200",
+            "expected_category": "data_exposure",
+            "matched": false,
+            "matched_rule": null,
+            "scanner_line": null,
+            "passed": false
+          },
+          {
+            "finding_id": "dvga-017",
+            "repo_id": "dvga",
+            "file": "core/views.py",
+            "start_line": 333,
+            "is_vulnerable": true,
+            "primary_cwe": "CWE-400",
+            "expected_category": "other",
+            "matched": false,
+            "matched_rule": null,
+            "scanner_line": null,
+            "passed": false
+          },
+          {
+            "finding_id": "dvga-018",
+            "repo_id": "dvga",
+            "file": "core/views.py",
+            "start_line": 67,
+            "is_vulnerable": true,
+            "primary_cwe": "CWE-674",
+            "expected_category": "other",
+            "matched": false,
+            "matched_rule": null,
+            "scanner_line": null,
+            "passed": false
+          },
+          {
+            "finding_id": "dvga-019",
+            "repo_id": "dvga",
+            "file": "core/models.py",
+            "start_line": 58,
+            "is_vulnerable": true,
+            "primary_cwe": "CWE-117",
+            "expected_category": "other",
+            "matched": false,
+            "matched_rule": null,
+            "scanner_line": null,
+            "passed": false
+          },
+          {
+            "finding_id": "dvga-020",
+            "repo_id": "dvga",
+            "file": "core/models.py",
+            "start_line": 14,
+            "is_vulnerable": true,
+            "primary_cwe": "CWE-916",
+            "expected_category": "other",
+            "matched": false,
+            "matched_rule": null,
+            "scanner_line": null,
+            "passed": false
+          },
+          {
+            "finding_id": "dvga-021",
+            "repo_id": "dvga",
+            "file": "core/views.py",
+            "start_line": 370,
+            "is_vulnerable": true,
+            "primary_cwe": "CWE-200",
+            "expected_category": "data_exposure",
+            "matched": false,
+            "matched_rule": null,
+            "scanner_line": null,
+            "passed": false
+          },
+          {
+            "finding_id": "dvga-022",
+            "repo_id": "dvga",
+            "file": "core/views.py",
+            "start_line": 426,
+            "is_vulnerable": true,
+            "primary_cwe": "CWE-306",
+            "expected_category": "auth",
+            "matched": false,
+            "matched_rule": null,
+            "scanner_line": null,
+            "passed": false
+          },
+          {
+            "finding_id": "dvga-023",
+            "repo_id": "dvga",
+            "file": "core/views.py",
+            "start_line": 431,
+            "is_vulnerable": true,
+            "primary_cwe": "CWE-306",
+            "expected_category": "auth",
+            "matched": false,
+            "matched_rule": null,
+            "scanner_line": null,
+            "passed": false
+          },
+          {
+            "finding_id": "dvga-024",
+            "repo_id": "dvga",
+            "file": "core/views.py",
+            "start_line": 441,
+            "is_vulnerable": true,
+            "primary_cwe": "CWE-306",
+            "expected_category": "auth",
+            "matched": false,
+            "matched_rule": null,
+            "scanner_line": null,
+            "passed": false
+          },
+          {
+            "finding_id": "dvga-025",
+            "repo_id": "dvga",
+            "file": "core/security.py",
+            "start_line": 48,
+            "is_vulnerable": true,
+            "primary_cwe": "CWE-209",
+            "expected_category": "data_exposure",
+            "matched": false,
+            "matched_rule": null,
+            "scanner_line": null,
+            "passed": false
+          },
+          {
+            "finding_id": "dvga-026",
+            "repo_id": "dvga",
+            "file": "core/helpers.py",
+            "start_line": 14,
+            "is_vulnerable": true,
+            "primary_cwe": "CWE-330",
+            "expected_category": "other",
+            "matched": false,
+            "matched_rule": null,
+            "scanner_line": null,
+            "passed": false
+          },
+          {
+            "finding_id": "dvga-027",
+            "repo_id": "dvga",
+            "file": "core/middleware.py",
+            "start_line": 122,
+            "is_vulnerable": true,
+            "primary_cwe": "CWE-807",
+            "expected_category": "session_config",
+            "matched": false,
+            "matched_rule": null,
+            "scanner_line": null,
+            "passed": false
+          },
+          {
+            "finding_id": "dvga-028",
+            "repo_id": "dvga",
+            "file": "core/security.py",
+            "start_line": 37,
+            "is_vulnerable": true,
+            "primary_cwe": "CWE-16",
+            "expected_category": "session_config",
+            "matched": false,
+            "matched_rule": null,
+            "scanner_line": null,
+            "passed": false
+          },
+          {
+            "finding_id": "dvga-029",
+            "repo_id": "dvga",
+            "file": "core/middleware.py",
+            "start_line": 87,
+            "is_vulnerable": true,
+            "primary_cwe": "CWE-693",
+            "expected_category": "session_config",
+            "matched": false,
+            "matched_rule": null,
+            "scanner_line": null,
+            "passed": false
+          },
+          {
+            "finding_id": "dvga-030",
+            "repo_id": "dvga",
+            "file": "core/security.py",
+            "start_line": 57,
+            "is_vulnerable": true,
+            "primary_cwe": "CWE-862",
+            "expected_category": "auth",
+            "matched": false,
+            "matched_rule": null,
+            "scanner_line": null,
+            "passed": false
+          },
+          {
+            "finding_id": "dvga-031",
+            "repo_id": "dvga",
+            "file": "core/models.py",
+            "start_line": 25,
+            "is_vulnerable": true,
+            "primary_cwe": "CWE-312",
+            "expected_category": "data_exposure",
+            "matched": false,
+            "matched_rule": null,
+            "scanner_line": null,
+            "passed": false
+          },
+          {
+            "finding_id": "dvga-032",
+            "repo_id": "dvga",
+            "file": "core/helpers.py",
+            "start_line": 28,
+            "is_vulnerable": true,
+            "primary_cwe": "CWE-209",
+            "expected_category": "data_exposure",
+            "matched": false,
+            "matched_rule": null,
+            "scanner_line": null,
+            "passed": false
+          },
+          {
+            "finding_id": "dvga-033",
+            "repo_id": "dvga",
+            "file": "core/views.py",
+            "start_line": 211,
+            "is_vulnerable": true,
+            "primary_cwe": "CWE-295",
+            "expected_category": "other",
+            "matched": false,
+            "matched_rule": null,
+            "scanner_line": null,
+            "passed": false
+          },
+          {
+            "finding_id": "dvga-034",
+            "repo_id": "dvga",
+            "file": "core/views.py",
+            "start_line": 225,
+            "is_vulnerable": true,
+            "primary_cwe": "CWE-307",
+            "expected_category": "auth",
+            "matched": false,
+            "matched_rule": null,
+            "scanner_line": null,
+            "passed": false
+          },
+          {
+            "finding_id": "dvga-035",
+            "repo_id": "dvga",
+            "file": "core/views.py",
+            "start_line": 258,
+            "is_vulnerable": true,
+            "primary_cwe": "CWE-284",
+            "expected_category": "data_exposure",
+            "matched": false,
+            "matched_rule": null,
+            "scanner_line": null,
+            "passed": false
+          },
+          {
+            "finding_id": "djangoat-001",
+            "repo_id": "djangoat",
+            "file": "app/views/users/views.py",
+            "start_line": 74,
+            "is_vulnerable": true,
+            "primary_cwe": "CWE-89",
+            "expected_category": "injection",
+            "matched": false,
+            "matched_rule": null,
+            "scanner_line": null,
+            "passed": false
+          },
+          {
+            "finding_id": "djangoat-007",
+            "repo_id": "djangoat",
+            "file": "app/views/users/benefit_forms/views.py",
+            "start_line": 25,
+            "is_vulnerable": true,
+            "primary_cwe": "CWE-22",
+            "expected_category": "injection",
+            "matched": false,
+            "matched_rule": null,
+            "scanner_line": null,
+            "passed": false
+          },
+          {
+            "finding_id": "djangoat-008",
+            "repo_id": "djangoat",
+            "file": "app/views/sessions/views.py",
+            "start_line": 43,
+            "is_vulnerable": true,
+            "primary_cwe": "CWE-601",
+            "expected_category": "other",
+            "matched": false,
+            "matched_rule": null,
+            "scanner_line": null,
+            "passed": false
+          },
+          {
+            "finding_id": "djangoat-011",
+            "repo_id": "djangoat",
+            "file": "pygoat/settings.py",
+            "start_line": 135,
+            "is_vulnerable": true,
+            "primary_cwe": "CWE-798",
+            "expected_category": "data_exposure",
+            "matched": false,
+            "matched_rule": null,
+            "scanner_line": null,
+            "passed": false
+          },
+          {
+            "finding_id": "djangoat-012",
+            "repo_id": "djangoat",
+            "file": "app/management/commands/seed.py",
+            "start_line": 10,
+            "is_vulnerable": true,
+            "primary_cwe": "CWE-798",
+            "expected_category": "data_exposure",
+            "matched": false,
+            "matched_rule": null,
+            "scanner_line": null,
+            "passed": false
+          },
+          {
+            "finding_id": "djangoat-013",
+            "repo_id": "djangoat",
+            "file": "app/views/users/work_info/views.py",
+            "start_line": 12,
+            "is_vulnerable": true,
+            "primary_cwe": "CWE-200",
+            "expected_category": "data_exposure",
+            "matched": false,
+            "matched_rule": null,
+            "scanner_line": null,
+            "passed": false
+          },
+          {
+            "finding_id": "djangoat-014",
+            "repo_id": "djangoat",
+            "file": "app/models/User/user.py",
+            "start_line": 131,
+            "is_vulnerable": true,
+            "primary_cwe": "CWE-312",
+            "expected_category": "data_exposure",
+            "matched": false,
+            "matched_rule": null,
+            "scanner_line": null,
+            "passed": false
+          },
+          {
+            "finding_id": "djangoat-015",
+            "repo_id": "djangoat",
+            "file": "template/users/work_info/index.html",
+            "start_line": 36,
+            "is_vulnerable": true,
+            "primary_cwe": "CWE-200",
+            "expected_category": "data_exposure",
+            "matched": false,
+            "matched_rule": null,
+            "scanner_line": null,
+            "passed": false
+          },
+          {
+            "finding_id": "djangoat-016",
+            "repo_id": "djangoat",
+            "file": "app/views/sessions/views.py",
+            "start_line": 52,
+            "is_vulnerable": true,
+            "primary_cwe": "CWE-204",
+            "expected_category": "auth",
+            "matched": false,
+            "matched_rule": null,
+            "scanner_line": null,
+            "passed": false
+          },
+          {
+            "finding_id": "djangoat-017",
+            "repo_id": "djangoat",
+            "file": "app/views/password_resets/views.py",
+            "start_line": 17,
+            "is_vulnerable": true,
+            "primary_cwe": "CWE-204",
+            "expected_category": "auth",
+            "matched": false,
+            "matched_rule": null,
+            "scanner_line": null,
+            "passed": false
+          },
+          {
+            "finding_id": "djangoat-018",
+            "repo_id": "djangoat",
+            "file": "app/views/admin/views.py",
+            "start_line": 14,
+            "is_vulnerable": true,
+            "primary_cwe": "CWE-862",
+            "expected_category": "auth",
+            "matched": false,
+            "matched_rule": null,
+            "scanner_line": null,
+            "passed": false
+          },
+          {
+            "finding_id": "djangoat-019",
+            "repo_id": "djangoat",
+            "file": "app/views/admin/views.py",
+            "start_line": 53,
+            "is_vulnerable": true,
+            "primary_cwe": "CWE-862",
+            "expected_category": "auth",
+            "matched": false,
+            "matched_rule": null,
+            "scanner_line": null,
+            "passed": false
+          },
+          {
+            "finding_id": "djangoat-020",
+            "repo_id": "djangoat",
+            "file": "app/views/admin/views.py",
+            "start_line": 39,
+            "is_vulnerable": true,
+            "primary_cwe": "CWE-862",
+            "expected_category": "auth",
+            "matched": false,
+            "matched_rule": null,
+            "scanner_line": null,
+            "passed": false
+          },
+          {
+            "finding_id": "djangoat-021",
+            "repo_id": "djangoat",
+            "file": "app/views/users/messages/views.py",
+            "start_line": 51,
+            "is_vulnerable": true,
+            "primary_cwe": "CWE-639",
+            "expected_category": "auth",
+            "matched": false,
+            "matched_rule": null,
+            "scanner_line": null,
+            "passed": false
+          },
+          {
+            "finding_id": "djangoat-022",
+            "repo_id": "djangoat",
+            "file": "app/views/admin/views.py",
+            "start_line": 66,
+            "is_vulnerable": true,
+            "primary_cwe": "CWE-915",
+            "expected_category": "other",
+            "matched": false,
+            "matched_rule": null,
+            "scanner_line": null,
+            "passed": false
+          },
+          {
+            "finding_id": "djangoat-023",
+            "repo_id": "djangoat",
+            "file": "pygoat/settings.py",
+            "start_line": 25,
+            "is_vulnerable": true,
+            "primary_cwe": "CWE-209",
+            "expected_category": "data_exposure",
+            "matched": false,
+            "matched_rule": null,
+            "scanner_line": null,
+            "passed": false
+          },
+          {
+            "finding_id": "djangoat-024",
+            "repo_id": "djangoat",
+            "file": "pygoat/settings.py",
+            "start_line": 27,
+            "is_vulnerable": true,
+            "primary_cwe": "CWE-16",
+            "expected_category": "session_config",
+            "matched": false,
+            "matched_rule": null,
+            "scanner_line": null,
+            "passed": false
+          },
+          {
+            "finding_id": "djangoat-025",
+            "repo_id": "djangoat",
+            "file": "app/views/password_resets/views.py",
+            "start_line": 44,
+            "is_vulnerable": true,
+            "primary_cwe": "CWE-328",
+            "expected_category": "data_exposure",
+            "matched": false,
+            "matched_rule": null,
+            "scanner_line": null,
+            "passed": false
+          },
+          {
+            "finding_id": "djangoat-026",
+            "repo_id": "djangoat",
+            "file": "app/views/password_resets/views.py",
+            "start_line": 52,
+            "is_vulnerable": true,
+            "primary_cwe": "CWE-287",
+            "expected_category": "auth",
+            "matched": false,
+            "matched_rule": null,
+            "scanner_line": null,
+            "passed": false
+          },
+          {
+            "finding_id": "djangoat-027",
+            "repo_id": "djangoat",
+            "file": "app/models/User/user.py",
+            "start_line": 155,
+            "is_vulnerable": true,
+            "primary_cwe": "CWE-79",
+            "expected_category": "xss",
+            "matched": false,
+            "matched_rule": null,
+            "scanner_line": null,
+            "passed": false
+          },
+          {
+            "finding_id": "djangoat-028",
+            "repo_id": "djangoat",
+            "file": "app/views/api/users/views.py",
+            "start_line": 42,
+            "is_vulnerable": true,
+            "primary_cwe": "CWE-287",
+            "expected_category": "auth",
+            "matched": false,
+            "matched_rule": null,
+            "scanner_line": null,
+            "passed": false
+          },
+          {
+            "finding_id": "djangoat-029",
+            "repo_id": "djangoat",
+            "file": "app/views/sessions/views.py",
+            "start_line": 47,
+            "is_vulnerable": true,
+            "primary_cwe": "CWE-614",
+            "expected_category": "session_config",
+            "matched": false,
+            "matched_rule": null,
+            "scanner_line": null,
+            "passed": false
+          },
+          {
+            "finding_id": "djangoat-030",
+            "repo_id": "djangoat",
+            "file": "app/models/Benefits/benefits.py",
+            "start_line": 33,
+            "is_vulnerable": true,
+            "primary_cwe": "CWE-22",
+            "expected_category": "injection",
+            "matched": false,
+            "matched_rule": null,
+            "scanner_line": null,
+            "passed": false
+          },
+          {
+            "finding_id": "djangoat-031",
+            "repo_id": "djangoat",
+            "file": "app/views/users/pay/views.py",
+            "start_line": 44,
+            "is_vulnerable": true,
+            "primary_cwe": "CWE-639",
+            "expected_category": "auth",
+            "matched": false,
+            "matched_rule": null,
+            "scanner_line": null,
+            "passed": false
+          },
+          {
+            "finding_id": "djangoat-033",
+            "repo_id": "djangoat",
+            "file": "template/users/signup.html",
+            "start_line": 20,
+            "is_vulnerable": true,
+            "primary_cwe": "CWE-79",
+            "expected_category": "xss",
+            "matched": false,
+            "matched_rule": null,
+            "scanner_line": null,
+            "passed": false
+          },
+          {
+            "finding_id": "djangoat-034",
+            "repo_id": "djangoat",
+            "file": "template/admin/modal.html",
+            "start_line": 7,
+            "is_vulnerable": true,
+            "primary_cwe": "CWE-352",
+            "expected_category": "other",
+            "matched": false,
+            "matched_rule": null,
+            "scanner_line": null,
+            "passed": false
+          },
+          {
+            "finding_id": "djangoat-035",
+            "repo_id": "djangoat",
+            "file": "template/admin/modal.html",
+            "start_line": 43,
+            "is_vulnerable": true,
+            "primary_cwe": "CWE-79",
+            "expected_category": "xss",
+            "matched": false,
+            "matched_rule": null,
+            "scanner_line": null,
+            "passed": false
+          },
+          {
+            "finding_id": "djangoat-036",
+            "repo_id": "djangoat",
+            "file": "template/users/performance/index.html",
+            "start_line": 57,
+            "is_vulnerable": true,
+            "primary_cwe": "CWE-79",
+            "expected_category": "xss",
+            "matched": false,
+            "matched_rule": null,
+            "scanner_line": null,
+            "passed": false
+          },
+          {
+            "finding_id": "djangoat-037",
+            "repo_id": "djangoat",
+            "file": "app/models/utils.py",
+            "start_line": 10,
+            "is_vulnerable": true,
+            "primary_cwe": "CWE-327",
+            "expected_category": "data_exposure",
+            "matched": false,
+            "matched_rule": null,
+            "scanner_line": null,
+            "passed": false
+          },
+          {
+            "finding_id": "djangoat-038",
+            "repo_id": "djangoat",
+            "file": "app/models/utils.py",
+            "start_line": 28,
+            "is_vulnerable": true,
+            "primary_cwe": "CWE-329",
+            "expected_category": "data_exposure",
+            "matched": false,
+            "matched_rule": null,
+            "scanner_line": null,
+            "passed": false
+          },
+          {
+            "finding_id": "djangoat-039",
+            "repo_id": "djangoat",
+            "file": "app/models/utils.py",
+            "start_line": 44,
+            "is_vulnerable": true,
+            "primary_cwe": "CWE-354",
+            "expected_category": "data_exposure",
+            "matched": false,
+            "matched_rule": null,
+            "scanner_line": null,
+            "passed": false
+          },
+          {
+            "finding_id": "djangoat-040",
+            "repo_id": "djangoat",
+            "file": "app/views/sessions/views.py",
+            "start_line": 22,
+            "is_vulnerable": true,
+            "primary_cwe": "CWE-384",
+            "expected_category": "session_config",
+            "matched": false,
+            "matched_rule": null,
+            "scanner_line": null,
+            "passed": false
+          },
+          {
+            "finding_id": "djangoat-041",
+            "repo_id": "djangoat",
+            "file": "app/views/password_resets/views.py",
+            "start_line": 97,
+            "is_vulnerable": true,
+            "primary_cwe": "CWE-640",
+            "expected_category": "auth",
+            "matched": false,
+            "matched_rule": null,
+            "scanner_line": null,
+            "passed": false
+          },
+          {
+            "finding_id": "djangoat-042",
+            "repo_id": "djangoat",
+            "file": "pygoat/docker_settings.py",
+            "start_line": 5,
+            "is_vulnerable": true,
+            "primary_cwe": "CWE-798",
+            "expected_category": "data_exposure",
+            "matched": false,
+            "matched_rule": null,
+            "scanner_line": null,
+            "passed": false
+          },
+          {
+            "finding_id": "djangoat-043",
+            "repo_id": "djangoat",
+            "file": "app/views/users/messages/views.py",
+            "start_line": 24,
+            "is_vulnerable": true,
+            "primary_cwe": "CWE-862",
+            "expected_category": "auth",
+            "matched": false,
+            "matched_rule": null,
+            "scanner_line": null,
+            "passed": false
+          },
+          {
+            "finding_id": "djangoat-044",
+            "repo_id": "djangoat",
+            "file": "app/views/api/mobile/views.py",
+            "start_line": 24,
+            "is_vulnerable": true,
+            "primary_cwe": "CWE-306",
+            "expected_category": "auth",
+            "matched": false,
+            "matched_rule": null,
+            "scanner_line": null,
+            "passed": false
+          },
+          {
+            "finding_id": "djangoat-045",
+            "repo_id": "djangoat",
+            "file": "app/views/users/views.py",
+            "start_line": 89,
+            "is_vulnerable": true,
+            "primary_cwe": "CWE-915",
+            "expected_category": "auth",
+            "matched": false,
+            "matched_rule": null,
+            "scanner_line": null,
+            "passed": false
+          },
+          {
+            "finding_id": "djangoat-046",
+            "repo_id": "djangoat",
+            "file": "template/layouts/shared/not_logged_in.html",
+            "start_line": 47,
+            "is_vulnerable": true,
+            "primary_cwe": "CWE-798",
+            "expected_category": "data_exposure",
+            "matched": false,
+            "matched_rule": null,
+            "scanner_line": null,
+            "passed": false
+          },
+          {
+            "finding_id": "djangoat-047",
+            "repo_id": "djangoat",
+            "file": "app/views/api/users/views.py",
+            "start_line": 12,
+            "is_vulnerable": true,
+            "primary_cwe": "CWE-200",
+            "expected_category": "data_exposure",
+            "matched": false,
+            "matched_rule": null,
+            "scanner_line": null,
+            "passed": false
+          },
+          {
+            "finding_id": "djangoat-048",
+            "repo_id": "djangoat",
+            "file": "static/app/javascript/users/pay/index.js",
+            "start_line": 44,
+            "is_vulnerable": true,
+            "primary_cwe": "CWE-79",
+            "expected_category": "xss",
+            "matched": false,
+            "matched_rule": null,
+            "scanner_line": null,
+            "passed": false
+          },
+          {
+            "finding_id": "djangoat-049",
+            "repo_id": "djangoat",
+            "file": "app/views/users/views.py",
+            "start_line": 80,
+            "is_vulnerable": true,
+            "primary_cwe": "CWE-79",
+            "expected_category": "xss",
+            "matched": false,
+            "matched_rule": null,
+            "scanner_line": null,
+            "passed": false
+          },
+          {
+            "finding_id": "djangoat-050",
+            "repo_id": "djangoat",
+            "file": "app/views/users/views.py",
+            "start_line": 101,
+            "is_vulnerable": true,
+            "primary_cwe": "CWE-79",
+            "expected_category": "xss",
+            "matched": false,
+            "matched_rule": null,
+            "scanner_line": null,
+            "passed": false
+          },
+          {
+            "finding_id": "dsvpwa-003",
+            "repo_id": "dsvpwa",
+            "file": "dsvpwa/attacks.py",
+            "start_line": 73,
+            "is_vulnerable": true,
+            "primary_cwe": "CWE-79",
+            "expected_category": "xss",
+            "matched": false,
+            "matched_rule": null,
+            "scanner_line": null,
+            "passed": false
+          },
+          {
+            "finding_id": "dsvpwa-004",
+            "repo_id": "dsvpwa",
+            "file": "dsvpwa/attacks.py",
+            "start_line": 97,
+            "is_vulnerable": true,
+            "primary_cwe": "CWE-79",
+            "expected_category": "xss",
+            "matched": false,
+            "matched_rule": null,
+            "scanner_line": null,
+            "passed": false
+          },
+          {
+            "finding_id": "dsvpwa-005",
+            "repo_id": "dsvpwa",
+            "file": "dsvpwa/attacks.py",
+            "start_line": 119,
+            "is_vulnerable": true,
+            "primary_cwe": "CWE-601",
+            "expected_category": "other",
+            "matched": false,
+            "matched_rule": null,
+            "scanner_line": null,
+            "passed": false
+          },
+          {
+            "finding_id": "dsvpwa-008",
+            "repo_id": "dsvpwa",
+            "file": "dsvpwa/attacks.py",
+            "start_line": 211,
+            "is_vulnerable": true,
+            "primary_cwe": "CWE-22",
+            "expected_category": "injection",
+            "matched": false,
+            "matched_rule": null,
+            "scanner_line": null,
+            "passed": false
+          },
+          {
+            "finding_id": "dsvpwa-009",
+            "repo_id": "dsvpwa",
+            "file": "dsvpwa/attacks.py",
+            "start_line": 213,
+            "is_vulnerable": true,
+            "primary_cwe": "CWE-918",
+            "expected_category": "injection",
+            "matched": false,
+            "matched_rule": null,
+            "scanner_line": null,
+            "passed": false
+          },
+          {
+            "finding_id": "dsvpwa-010",
+            "repo_id": "dsvpwa",
+            "file": "dsvpwa/attacks.py",
+            "start_line": 229,
+            "is_vulnerable": true,
+            "primary_cwe": "CWE-384",
+            "expected_category": "auth",
+            "matched": false,
+            "matched_rule": null,
+            "scanner_line": null,
+            "passed": false
+          },
+          {
+            "finding_id": "dsvpwa-011",
+            "repo_id": "dsvpwa",
+            "file": "dsvpwa/attacks.py",
+            "start_line": 131,
+            "is_vulnerable": true,
+            "primary_cwe": "CWE-862",
+            "expected_category": "auth",
+            "matched": false,
+            "matched_rule": null,
+            "scanner_line": null,
+            "passed": false
+          },
+          {
+            "finding_id": "dsvpwa-012",
+            "repo_id": "dsvpwa",
+            "file": "dsvpwa/attacks.py",
+            "start_line": 322,
+            "is_vulnerable": true,
+            "primary_cwe": "CWE-352",
+            "expected_category": "session_config",
+            "matched": false,
+            "matched_rule": null,
+            "scanner_line": null,
+            "passed": false
+          },
+          {
+            "finding_id": "dsvpwa-013",
+            "repo_id": "dsvpwa",
+            "file": "dsvpwa/attacks.py",
+            "start_line": 366,
+            "is_vulnerable": true,
+            "primary_cwe": "CWE-1021",
+            "expected_category": "session_config",
+            "matched": false,
+            "matched_rule": null,
+            "scanner_line": null,
+            "passed": false
+          },
+          {
+            "finding_id": "dsvpwa-015",
+            "repo_id": "dsvpwa",
+            "file": "static/js/custom.js",
+            "start_line": 9,
+            "is_vulnerable": true,
+            "primary_cwe": "CWE-79",
+            "expected_category": "xss",
+            "matched": false,
+            "matched_rule": null,
+            "scanner_line": null,
+            "passed": false
+          },
+          {
+            "finding_id": "dsvpwa-016",
+            "repo_id": "dsvpwa",
+            "file": "dsvpwa/attacks.py",
+            "start_line": 285,
+            "is_vulnerable": true,
+            "primary_cwe": "CWE-798",
+            "expected_category": "data_exposure",
+            "matched": false,
+            "matched_rule": null,
+            "scanner_line": null,
+            "passed": false
+          },
+          {
+            "finding_id": "dsvpwa-017",
+            "repo_id": "dsvpwa",
+            "file": "db/users.xml",
+            "start_line": 1,
+            "is_vulnerable": true,
+            "primary_cwe": "CWE-798",
+            "expected_category": "data_exposure",
+            "matched": false,
+            "matched_rule": null,
+            "scanner_line": null,
+            "passed": false
+          },
+          {
+            "finding_id": "dsvpwa-018",
+            "repo_id": "dsvpwa",
+            "file": "dsvpwa/attacks.py",
+            "start_line": 40,
+            "is_vulnerable": true,
+            "primary_cwe": "CWE-209",
+            "expected_category": "data_exposure",
+            "matched": false,
+            "matched_rule": null,
+            "scanner_line": null,
+            "passed": false
+          },
+          {
+            "finding_id": "dsvpwa-019",
+            "repo_id": "dsvpwa",
+            "file": "dsvpwa/attacks.py",
+            "start_line": 290,
+            "is_vulnerable": true,
+            "primary_cwe": "CWE-209",
+            "expected_category": "data_exposure",
+            "matched": false,
+            "matched_rule": null,
+            "scanner_line": null,
+            "passed": false
+          },
+          {
+            "finding_id": "dsvpwa-020",
+            "repo_id": "dsvpwa",
+            "file": "dsvpwa.py",
+            "start_line": 37,
+            "is_vulnerable": true,
+            "primary_cwe": "CWE-326",
+            "expected_category": "session_config",
+            "matched": false,
+            "matched_rule": null,
+            "scanner_line": null,
+            "passed": false
+          },
+          {
+            "finding_id": "dsvpwa-021",
+            "repo_id": "dsvpwa",
+            "file": "dsvpwa/handlers.py",
+            "start_line": 232,
+            "is_vulnerable": true,
+            "primary_cwe": "CWE-1004",
+            "expected_category": "session_config",
+            "matched": false,
+            "matched_rule": null,
+            "scanner_line": null,
+            "passed": false
+          },
+          {
+            "finding_id": "dsvpwa-022",
+            "repo_id": "dsvpwa",
+            "file": "dsvpwa/handlers.py",
+            "start_line": 237,
+            "is_vulnerable": true,
+            "primary_cwe": "CWE-16",
+            "expected_category": "session_config",
+            "matched": false,
+            "matched_rule": null,
+            "scanner_line": null,
+            "passed": false
+          }
+        ]
+      }
+    }
+  ]
+}

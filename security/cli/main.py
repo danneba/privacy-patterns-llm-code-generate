@@ -3,7 +3,7 @@ import sys
 import argparse
 from pathlib import Path
 
-from benchmarks.report_document import build_benchmark_document
+from benchmarks.report_document import build_benchmark_document, default_report_path
 from benchmarks.realvuln.loader import DEFAULT_REALVULN_ROOT, ensure_realvuln_labels, load_realvuln_repos
 from benchmarks.runner import (
     DEFAULT_OWASP_PATH,
@@ -96,12 +96,12 @@ def _build_parser() -> argparse.ArgumentParser:
         help="Internal benchmark scope (default: security). OWASP is security-only.",
     )
     benchmark.add_argument(
-        "--format", choices=["text", "json"], default="text",
-        help="Output format (default: text).",
+        "--format", choices=["text", "json"], default="json",
+        help="Output format (default: json).",
     )
     benchmark.add_argument(
         "--output", metavar="FILE",
-        help="Write output to FILE instead of stdout.",
+        help="Write output to FILE (default for json: benchmarks/reports/<dataset>-latest.json).",
     )
     benchmark.add_argument(
         "--owasp-path",
@@ -294,10 +294,18 @@ def _run_benchmark(args: argparse.Namespace) -> int:
     else:
         output = format_report_text(reports)
 
+    output_path: Path | None
     if args.output:
-        with open(args.output, "w", encoding="utf-8") as handle:
-            handle.write(output)
-        print(f"Benchmark report written to {args.output}")
+        output_path = Path(args.output)
+    elif args.format == "json":
+        output_path = default_report_path(args.dataset)
+    else:
+        output_path = None
+
+    if output_path is not None:
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        output_path.write_text(output, encoding="utf-8")
+        print(f"Benchmark report written to {output_path}")
     else:
         print(output)
 
