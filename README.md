@@ -303,32 +303,31 @@ VibeCodeGuide is evaluated on three datasets:
 | **OWASP** | [OWASP Benchmark for Python v0.1](https://github.com/OWASP-Benchmark/BenchmarkPython) — 1,230 synthetic tests | 620 tests in mapped categories (`sqli`, `cmdi`, `codeinj`, `hash`, `weakrand`, `deserialization`) |
 | **RealVuln** | [RealVuln](https://huggingface.co/datasets/Kolega-Dev/RealVuln) — 26 real vulnerable Python applications | 396 findings in `injection` and `data_exposure` (728 total; remaining categories out-of-scope) |
 
-Reports use JSON schema v1 (`benchmarks/report.schema.json`). Full workflow: **`benchmarks/REPORTS.md`**.
+Reports use JSON schema v1 (`benchmarks/report.schema.json`) and are saved by default to `benchmarks/reports/<dataset>-latest.json`. Full workflow: **`benchmarks/REPORTS.md`**.
 
 ### Run benchmarks
 
 ```bash
 source .venv/bin/activate
 
-# OWASP only
+# OWASP only (writes benchmarks/reports/owasp-latest.json)
 PYTHONPATH=. python3 -m security.cli.main benchmark \
   --dataset owasp \
-  --clone-owasp \
-  --format json \
-  --output benchmarks/reports/owasp-latest.json
+  --clone-owasp
 
 # RealVuln (repos must be cloned under benchmarks/data/RealVuln/repos/)
 PYTHONPATH=. python3 -m security.cli.main benchmark \
   --dataset realvuln \
-  --format json \
-  --iteration-label realvuln-iteration-7 \
-  --output benchmarks/reports/realvuln-latest.json
+  --iteration-label realvuln-iteration-7
 
-# Both datasets
+# All datasets (writes benchmarks/reports/all-latest.json)
 PYTHONPATH=. python3 -m security.cli.main benchmark \
-  --dataset all \
-  --format json \
-  --output benchmarks/reports/verify-latest.json
+  --dataset all
+
+# Human-readable terminal output instead of JSON
+PYTHONPATH=. python3 -m security.cli.main benchmark \
+  --dataset internal \
+  --format text
 ```
 
 Exit code `1` after a benchmark run indicates some tests or findings failed — that is expected when metrics are below 100%.

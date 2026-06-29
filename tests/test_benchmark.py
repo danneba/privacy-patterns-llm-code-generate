@@ -67,7 +67,7 @@ def test_check_owasp_benchmark_ready():
 
 
 def test_benchmark_report_document_shape():
-    from benchmarks.report_document import build_benchmark_document
+    from benchmarks.report_document import build_benchmark_document, default_report_path
 
     report = run_internal_benchmark(scope="security")
     doc = build_benchmark_document([report], iteration_label="test-run")
@@ -79,3 +79,4 @@ def test_benchmark_report_document_shape():
     assert run["dataset"] == "internal"
     assert "metrics" in run
     assert "summary" in run
+    assert default_report_path("owasp").name == "owasp-latest.json"

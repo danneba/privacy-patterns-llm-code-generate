@@ -21,7 +21,7 @@ from yaml import load
 
 
 API_KEY = "sk-test-hardcoded-secret-123456"
-password = "admin123"
+# password = "admin123"
 auth_token = "tok_live_example_987654"
 
 

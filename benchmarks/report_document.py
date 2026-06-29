@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 from importlib.metadata import PackageNotFoundError, version
+from pathlib import Path
 from typing import Any
 
 from benchmarks.owasp_map import OWASP_CATEGORY_RULES, SUPPORTED_OWASP_CATEGORIES
@@ -14,6 +15,12 @@ from benchmarks.runner import BenchmarkReport, OWASP_REPO_URL
 
 REPORT_SCHEMA_VERSION = "1.0"
 TOOL_NAME = "VibeCodeGuide"
+DEFAULT_REPORTS_DIR = Path(__file__).resolve().parent / "reports"
+
+
+def default_report_path(dataset: str) -> Path:
+    """Default JSON report path for a benchmark --dataset value."""
+    return DEFAULT_REPORTS_DIR / f"{dataset}-latest.json"
 
 
 def _tool_version() -> str:

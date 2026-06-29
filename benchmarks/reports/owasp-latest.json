@@ -1,0 +1,277 @@
+{
+  "report_schema_version": "1.0",
+  "generated_at": "2026-06-14T16:19:18+00:00",
+  "tool": {
+    "name": "VibeCodeGuide",
+    "version": "0.1.0",
+    "command": "/Users/dan/Documents/course/MasterComputer/Privacy Engineering/Privacy Project/privacy-patterns-llm-code-generate/security/cli/main.py benchmark --dataset owasp --format json --iteration-label iteration-2-owasp-tuned --output benchmarks/reports/owasp-latest.json"
+  },
+  "iteration_label": "iteration-2-owasp-tuned",
+  "runs": [
+    {
+      "run_id": "owasp-security",
+      "dataset": "owasp",
+      "scope": "security",
+      "summary": {
+        "tests_total_in_benchmark": 1230,
+        "tests_in_scope": 620,
+        "tests_out_of_scope": 610,
+        "tests_passed": 612,
+        "tests_failed": 8,
+        "pass_rate": 0.9871
+      },
+      "metrics": {
+        "true_positives": 226,
+        "false_positives": 8,
+        "false_negatives": 0,
+        "precision": 0.9658,
+        "recall": 1.0,
+        "f1": 0.9826
+      },
+      "notes": [
+        "External OWASP Benchmark for Python v0.1.",
+        "Scores only categories mapped to VibeCodeGuide security rules (cmdi, codeinj, deserialization, hash, sqli, weakrand).",
+        "Skipped 610 out-of-scope tests (xss, xxe, pathtraver, etc.).",
+        "Source: https://github.com/OWASP-Benchmark/BenchmarkPython.git"
+      ],
+      "methodology": {
+        "benchmark_name": "OWASP Benchmark for Python",
+        "benchmark_version": "0.1",
+        "benchmark_repository": "https://github.com/OWASP-Benchmark/BenchmarkPython.git",
+        "scoring_unit": "test_case",
+        "in_scope_categories": [
+          "cmdi",
+          "codeinj",
+          "deserialization",
+          "hash",
+          "sqli",
+          "weakrand"
+        ],
+        "category_rule_mapping": {
+          "cmdi": [
+            "os_shell_execution",
+            "subprocess_shell_command_injection",
+            "subprocess_shell_true"
+          ],
+          "codeinj": [
+            "eval_exec_usage"
+          ],
+          "deserialization": [
+            "unsafe_deserialization",
+            "unsafe_yaml_load"
+          ],
+          "hash": [
+            "weak_hash_algorithm"
+          ],
+          "sqli": [
+            "sql_query_construction"
+          ],
+          "weakrand": [
+            "insecure_random"
+          ]
+        },
+        "out_of_scope_note": "Categories without VibeCodeGuide rule mappings (e.g. XSS, XXE, path traversal) are excluded from scored metrics.",
+        "analyzer_mode": "security baseline (privacy/smell/performance disabled)",
+        "definitions": {
+          "true_positive": "Labeled vulnerable test with at least one mapped rule detected.",
+          "false_negative": "Labeled vulnerable test with no mapped rule detected.",
+          "false_positive": "Labeled safe test with at least one mapped rule detected.",
+          "precision": "TP / (TP + FP)",
+          "recall": "TP / (TP + FN)",
+          "f1": "2 * precision * recall / (precision + recall)"
+        }
+      },
+      "categories": [
+        {
+          "category": "cmdi",
+          "test_count": 20,
+          "metrics": {
+            "true_positives": 13,
+            "false_positives": 2,
+            "false_negatives": 0,
+            "precision": 0.8667,
+            "recall": 1.0,
+            "f1": 0.9286
+          }
+        },
+        {
+          "category": "codeinj",
+          "test_count": 53,
+          "metrics": {
+            "true_positives": 20,
+            "false_positives": 2,
+            "false_negatives": 0,
+            "precision": 0.9091,
+            "recall": 1.0,
+            "f1": 0.9524
+          }
+        },
+        {
+          "category": "deserialization",
+          "test_count": 54,
+          "metrics": {
+            "true_positives": 18,
+            "false_positives": 4,
+            "false_negatives": 0,
+            "precision": 0.8182,
+            "recall": 1.0,
+            "f1": 0.9
+          }
+        },
+        {
+          "category": "hash",
+          "test_count": 151,
+          "metrics": {
+            "true_positives": 71,
+            "false_positives": 0,
+            "false_negatives": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0
+          }
+        },
+        {
+          "category": "sqli",
+          "test_count": 16,
+          "metrics": {
+            "true_positives": 5,
+            "false_positives": 0,
+            "false_negatives": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0
+          }
+        },
+        {
+          "category": "weakrand",
+          "test_count": 326,
+          "metrics": {
+            "true_positives": 99,
+            "false_positives": 0,
+            "false_negatives": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0
+          }
+        }
+      ],
+      "failures": {
+        "count": 8,
+        "items": [
+          {
+            "test_name": "BenchmarkTest00424",
+            "category": "codeinj",
+            "cwe": "94",
+            "is_vulnerable": false,
+            "detected_rules": [
+              "eval_exec_usage"
+            ],
+            "relevant_hits": [
+              "eval_exec_usage"
+            ],
+            "parse_errors": [],
+            "passed": false
+          },
+          {
+            "test_name": "BenchmarkTest00826",
+            "category": "deserialization",
+            "cwe": "502",
+            "is_vulnerable": false,
+            "detected_rules": [
+              "unsafe_deserialization"
+            ],
+            "relevant_hits": [
+              "unsafe_deserialization"
+            ],
+            "parse_errors": [],
+            "passed": false
+          },
+          {
+            "test_name": "BenchmarkTest01096",
+            "category": "deserialization",
+            "cwe": "502",
+            "is_vulnerable": false,
+            "detected_rules": [
+              "unsafe_deserialization"
+            ],
+            "relevant_hits": [
+              "unsafe_deserialization"
+            ],
+            "parse_errors": [],
+            "passed": false
+          },
+          {
+            "test_name": "BenchmarkTest01098",
+            "category": "cmdi",
+            "cwe": "78",
+            "is_vulnerable": false,
+            "detected_rules": [
+              "subprocess_shell_true"
+            ],
+            "relevant_hits": [
+              "subprocess_shell_true"
+            ],
+            "parse_errors": [],
+            "passed": false
+          },
+          {
+            "test_name": "BenchmarkTest01164",
+            "category": "codeinj",
+            "cwe": "94",
+            "is_vulnerable": false,
+            "detected_rules": [
+              "eval_exec_usage"
+            ],
+            "relevant_hits": [
+              "eval_exec_usage"
+            ],
+            "parse_errors": [],
+            "passed": false
+          },
+          {
+            "test_name": "BenchmarkTest01172",
+            "category": "deserialization",
+            "cwe": "502",
+            "is_vulnerable": false,
+            "detected_rules": [
+              "unsafe_deserialization"
+            ],
+            "relevant_hits": [
+              "unsafe_deserialization"
+            ],
+            "parse_errors": [],
+            "passed": false
+          },
+          {
+            "test_name": "BenchmarkTest01173",
+            "category": "cmdi",
+            "cwe": "78",
+            "is_vulnerable": false,
+            "detected_rules": [
+              "subprocess_shell_true"
+            ],
+            "relevant_hits": [
+              "subprocess_shell_true"
+            ],
+            "parse_errors": [],
+            "passed": false
+          },
+          {
+            "test_name": "BenchmarkTest01230",
+            "category": "deserialization",
+            "cwe": "502",
+            "is_vulnerable": false,
+            "detected_rules": [
+              "unsafe_deserialization"
+            ],
+            "relevant_hits": [
+              "unsafe_deserialization"
+            ],
+            "parse_errors": [],
+            "passed": false
+          }
+        ]
+      }
+    }
+  ]
+}
