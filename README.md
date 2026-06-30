@@ -1,9 +1,9 @@
 # VibeCodeGuide: Security and Privacy Analyzer for AI-Generated Code
 
-> Privacy Engineering 2026 — Paris Lodron University of Salzburg  
-> **Authors:** Haylemicheal Mekonnen, Daniel Wassie
+> Privacy Engineering 2026, Paris Lodron University of Salzburg  
+> **Authors:** Daniel Wassie, Haylemicheal Mekonnen
 
-VibeCodeGuide helps teams review **vibe-coded** Python before it ships. It statically analyzes source for **security vulnerabilities** and **privacy risks**—unsafe execution, secrets, weak crypto, insecure APIs, sensitive data handling, and related issues common in AI-generated code.
+VibeCodeGuide helps teams review **vibe-coded** Python before it ships. It statically analyzes source for **security vulnerabilities** and **privacy risks**, unsafe execution, secrets, weak crypto, insecure APIs, sensitive data handling, and related issues common in AI-generated code.
 
 ---
 
@@ -41,7 +41,7 @@ vibecodeguide scan samples/security_showcase_vulnerable.py
 vibecodeguide scan samples/ --format json --output report.json
 ```
 
-That's all you need for the command-line analyzer — the core engine has **no required third-party dependencies**. For the REST API and VS Code extension, see [REST API](#rest-api) and [VS Code Extension](#vs-code-extension).
+That's all you need for the command-line analyzer. The core engine has **no required third-party dependencies**. For the REST API and VS Code extension, see [REST API](#rest-api) and [VS Code Extension](#vs-code-extension).
 
 ---
 
@@ -101,8 +101,8 @@ VibeCodeGuide is a **working research prototype** with CLI, REST API, VS Code ex
 
 **Available now:**
 
-- Static **security** rules (VG001–VG021) for Python
-- **Privacy** rule pack (PG001–PG008) mapped to Hoepman privacy design strategies
+- Static **security** rules (VG001-VG021) for Python
+- **Privacy** rule pack (PG001-PG008) mapped to Hoepman privacy design strategies
 - `PRIVACY` finding category in CLI/JSON reports with strategy metadata
 - CLI (`vibecodeguide scan`), REST API (`security.api`), and VS Code extension
 - Benchmark harness with structured JSON reports (schema v1)
@@ -116,7 +116,7 @@ VibeCodeGuide is a **working research prototype** with CLI, REST API, VS Code ex
 
 RealVuln headline metrics cover `injection` and `data_exposure` categories only (same scoping principle as OWASP). XSS, authentication, and session-configuration findings are reported as out-of-scope.
 
-**Interpretation:** RealVuln **56.4% F1** (iteration 7) is a **development-benchmark result** — RealVuln informed rule design (VG014–VG021) and final scoring on the same 23-repo corpus. It measures fit to RealVuln’s in-scope labels, not unbiased performance on unseen repositories. OWASP **98.3% F1** provides independent signal for the core rule set (VG001–VG013) on synthetic tests.
+**Interpretation:** RealVuln **56.4% F1** (iteration 7) is a **development-benchmark result**. RealVuln informed rule design (VG014-VG021) and final scoring on the same 23-repo corpus. It measures fit to RealVuln’s in-scope labels, not unbiased performance on unseen repositories. OWASP **98.3% F1** provides independent signal for the core rule set (VG001-VG013) on synthetic tests.
 
 **Planned:**
 
@@ -172,9 +172,9 @@ vibecodeguide scan ./project --output report.txt
 
 ### Privacy & Security Guidance (baseline vs guided)
 
-**Baseline** (`--no-guidance`): security rules only (VG001–VG021).
+**Baseline** (`--no-guidance`): security rules only (VG001-VG021).
 
-**Guided** (default): security + privacy guidance module (PG001–PG008, Hoepman strategies).
+**Guided** (default): security + privacy guidance module (PG001-PG008, Hoepman strategies).
 
 ```bash
 # Baseline only
@@ -204,8 +204,8 @@ Side-by-side comparison: `POST /analyze/demo`.
 
 | Code | Meaning                                               |
 | ---- | ----------------------------------------------------- |
-| `0`  | Scan completed — no findings above selected threshold |
-| `1`  | Scan completed — findings detected                    |
+| `0`  | Scan completed, no findings above selected threshold |
+| `1`  | Scan completed, findings detected                    |
 | `2`  | Operational error or invalid usage                    |
 
 ---
@@ -318,7 +318,7 @@ Interactive OpenAPI docs are served automatically at `http://localhost:8000/docs
 
 | Method | Path | Description |
 | ------ | ---- | ----------- |
-| `GET`  | `/health` | Liveness check — returns `{"status": "ok"}`. |
+| `GET`  | `/health` | Liveness check; returns `{"status": "ok"}`. |
 | `POST` | `/analyze` | Analyze a Python snippet and return findings. |
 | `POST` | `/analyze/demo` | Side-by-side baseline vs. guidance-enabled analysis. |
 | `POST` | `/analyze/impact` | Compare two versions of code (resolved vs. introduced findings). |
@@ -405,10 +405,10 @@ privacy-patterns-llm-code-generate/
 │   ├── cli/                   vibecodeguide CLI entry point
 │   ├── core/                  Scanner orchestration, demo & impact logic
 │   ├── analyzers/             Security, smell, and performance analyzers
-│   ├── rules/security/        Rule implementations VG001–VG021
+│   ├── rules/security/        Rule implementations VG001-VG021
 │   ├── models/                Finding and scan-result types
 │   └── reporters/             Text, JSON, and demo formatters
-├── privacy/                   Privacy rule pack (PG001–PG008, Hoepman strategies)
+├── privacy/                   Privacy rule pack (PG001-PG008, Hoepman strategies)
 │   ├── analyzers/             PrivacyAnalyzer
 │   └── rules/                 Privacy rule implementations
 ├── vscode-extension/          VibeCodeGuide VS Code / Cursor extension
@@ -443,8 +443,8 @@ VibeCodeGuide is evaluated on three datasets:
 | Dataset | Description | Scoring scope |
 |---------|-------------|---------------|
 | **Internal** | Labeled samples in `benchmarks/dataset.py` | Security and privacy rules |
-| **OWASP** | [OWASP Benchmark for Python v0.1](https://github.com/OWASP-Benchmark/BenchmarkPython) — 1,230 synthetic tests | 620 tests in mapped categories (`sqli`, `cmdi`, `codeinj`, `hash`, `weakrand`, `deserialization`) |
-| **RealVuln** | [RealVuln](https://huggingface.co/datasets/Kolega-Dev/RealVuln) — 26 real vulnerable Python applications | 396 findings in `injection` and `data_exposure` (728 total; remaining categories out-of-scope) |
+| **OWASP** | [OWASP Benchmark for Python v0.1](https://github.com/OWASP-Benchmark/BenchmarkPython), 1,230 synthetic tests | 620 tests in mapped categories (`sqli`, `cmdi`, `codeinj`, `hash`, `weakrand`, `deserialization`) |
+| **RealVuln** | [RealVuln](https://huggingface.co/datasets/Kolega-Dev/RealVuln), 26 real vulnerable Python applications | 396 findings in `injection` and `data_exposure` (728 total; remaining categories out-of-scope) |
 
 Reports use JSON schema v1 (`benchmarks/report.schema.json`) and are saved by default to `benchmarks/reports/<dataset>-latest.json`. Full workflow: **`benchmarks/REPORTS.md`**.
 
@@ -473,12 +473,12 @@ PYTHONPATH=. python3 -m security.cli.main benchmark \
   --format text
 ```
 
-Exit code `1` after a benchmark run indicates some tests or findings failed — that is expected when metrics are below 100%.
+Exit code `1` after a benchmark run indicates some tests or findings failed; that is expected when metrics are below 100%.
 
 ### Methodology notes
 
-- **OWASP:** Categories without rule mappings (XSS, XXE, path traversal, etc.) are excluded from scored metrics — 610 of 1,230 tests are out-of-scope.
-- **RealVuln:** Categories without rule mappings (XSS, auth, session configuration, other) are excluded — 332 of 728 findings are out-of-scope. Repos are cloned manually per [Real-Vuln-Benchmark](https://github.com/kolega-ai/Real-Vuln-Benchmark). Headline metrics use label **`realvuln-iteration-7`** (21 rules; rule families fixed after iteration 6).
+- **OWASP:** Categories without rule mappings (XSS, XXE, path traversal, etc.) are excluded from scored metrics; 610 of 1,230 tests are out-of-scope.
+- **RealVuln:** Categories without rule mappings (XSS, auth, session configuration, other) are excluded; 332 of 728 findings are out-of-scope. Repos are cloned manually per [Real-Vuln-Benchmark](https://github.com/kolega-ai/Real-Vuln-Benchmark). Headline metrics use label **`realvuln-iteration-7`** (21 rules; rule families fixed after iteration 6).
 - **Matching:** File path + CWE in acceptable set + line tolerance ±10. Unmatched scanner alerts count as false positives.
 - **RealVuln interpretation:** Same corpus used for iterative rule development and final evaluation; no repository holdout was performed. Reported F1 is in-corpus fit, not an estimate for unseen apps.
 
@@ -502,13 +502,13 @@ npm run compile
 
 Open `vscode-extension/` in VS Code, press **F5**, then on a Python file use:
 
-- **VibeCodeGuide: Open Secure Code Chat** — sidebar chat to generate Python with OWASP, CWE, and privacy rules
+- **VibeCodeGuide: Open Secure Code Chat**, sidebar chat to generate Python with OWASP, CWE, and privacy rules
 - **VibeCodeGuide: Analyze File**
 - **VibeCodeGuide: Analyze Selection**
 - **VibeCodeGuide: Check API Health**
 - **VibeCodeGuide: Set OpenAI API Key**
 
-The **Secure Code Chat** panel uses OpenAI to generate Python code guided by OWASP Top 10, CWE rules (VG001–VG021), and privacy patterns. Generated code is automatically scanned by the analyzer; use **Fix Issues** to regenerate a compliant version.
+The **Secure Code Chat** panel uses OpenAI to generate Python code guided by OWASP Top 10, CWE rules (VG001-VG021), and privacy patterns. Generated code is automatically scanned by the analyzer; use **Fix Issues** to regenerate a compliant version.
 
 Findings appear in **Problems** (security and privacy, with Hoepman strategy labels on privacy issues); full reports in the **VibeCodeGuide** output channel include privacy score and per-category counts.
 
@@ -519,11 +519,11 @@ Findings appear in **Problems** (security and privacy, with Hoepman strategy lab
 - **New with Guidance** badges on findings that only appear when guidance is enabled
 - Problems panel entries tagged `VibeCodeGuide · New with Guidance` for the same items
 
-**Code change impact demo** (automatic — no separate snapshot commands):
+**Code change impact demo** (automatic, no separate snapshot commands):
 
 1. Open `samples/privacy_showcase_vulnerable.py` and run **VibeCodeGuide: Analyze File**
 2. Comment out or fix a line (e.g. `# print(f"Login for {email}")`) and **save** (Cmd+S)
-3. Run **Analyze File** again — the extension compares with your previous run on this file
+3. Run **Analyze File** again; the extension compares with your previous run on this file
 
 The **Analysis changes** panel and output show **resolved**, **introduced**, and **unchanged** findings; Problems tags new issues as `New since last analysis`.
 
@@ -562,8 +562,8 @@ Keep the API running on port 8000 while using the extension. Use **VibeCodeGuide
 
 | Name                  | Institution                         |
 | --------------------- | ----------------------------------- |
-| Haylemicheal Mekonnen | Paris Lodron University of Salzburg |
 | Daniel Wassie         | Paris Lodron University of Salzburg |
+| Haylemicheal Mekonnen | Paris Lodron University of Salzburg |
 
 Developed for **Privacy Engineering 2026**, Paris Lodron University of Salzburg.
 

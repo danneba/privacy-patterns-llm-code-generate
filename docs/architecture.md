@@ -1,7 +1,7 @@
-# VibeCodeGuide — Architecture Design
+# VibeCodeGuide-Architecture Design
 
 > Static security and privacy analyzer for AI-generated ("vibe-coded") Python.
-> Privacy Engineering 2026 — Paris Lodron University of Salzburg.
+> Privacy Engineering 2026-Paris Lodron University of Salzburg.
 
 This document describes the system architecture: the layered design, the core
 analysis pipeline, the rule plugin model, and how each client (CLI, REST API,
@@ -28,16 +28,16 @@ For installation, usage, the rule catalog, and the REST API reference, see the
 
 ![VibeCodeGuide layered architecture: Input layer (CLI, REST API, VS Code/Cursor extension) feeding the Analysis layer (Scanner, Python AST, the Security/Privacy/Smell/Performance analyzers, and metadata enrichment), which produces the Output layer (text reporter, JSON reporter, editor diagnostics).](images/architecture-overview.png)
 
-- **Input layer** — thin clients. The VS Code extension does not analyze code itself; it sends file/selection content to the REST API.
-- **Analysis layer** — the `security/` Python package. This is the only place detection logic lives.
-- **Output layer** — formatters that turn a `ScanResult` into text, JSON, or editor diagnostics.
+- **Input layer**, thin clients. The VS Code extension does not analyze code itself; it sends file/selection content to the REST API.
+- **Analysis layer**, the `security/` Python package. This is the only place detection logic lives.
+- **Output layer**, formatters that turn a `ScanResult` into text, JSON, or editor diagnostics.
 
 ---
 
 ## 3. Core analysis pipeline
 
-The `Scanner` (`security/core/scanner.py`) is the orchestrator. Every scan — from
-any client — follows the same steps:
+The `Scanner` (`security/core/scanner.py`) is the orchestrator. Every scan, from
+any client, follows the same steps:
 
 ![Core analysis pipeline: source code is collected into Python files, parsed to an AST (syntax errors become reported ParseErrors and the file is skipped), analyzers run, findings are enriched with CWE/OWASP/risk metadata, then filtered by minimum severity and by inline ignore comments, producing a ScanResult of findings, parse errors, and a summary.](images/analysis-pipeline.png)
 
@@ -45,9 +45,9 @@ any client — follows the same steps:
 
 `Scanner._run_all()` runs analyzers in a fixed order and concatenates their findings:
 
-1. **`SecurityAnalyzer`** — always runs (VG001–VG021).
-2. **`PrivacyAnalyzer`** — runs only when `enable_guidance=True` (the default). This is what `--no-guidance` / `X-Enable-Guidance: false` toggles.
-3. **`SmellAnalyzer`** and **`PerformanceAnalyzer`** — auxiliary checks, run when `include_auxiliary_analyzers=True`.
+1. **`SecurityAnalyzer`**: always runs (VG001-VG021).
+2. **`PrivacyAnalyzer`**: runs only when `enable_guidance=True` (the default). This is what `--no-guidance` / `X-Enable-Guidance: false` toggles.
+3. **`SmellAnalyzer`** and **`PerformanceAnalyzer`**: auxiliary checks, run when `include_auxiliary_analyzers=True`.
 
 This ordering is why "baseline vs. guided" comparison works: disabling guidance
 simply skips the privacy analyzer, and the difference between the two runs is the
@@ -69,7 +69,7 @@ analyzer holds a list of rule instances and calls `check()` on each.
 2. Register the instance in `_DEFAULT_RULES` in `security/analyzers/security/analyzer.py`.
 3. Add CWE/OWASP/risk metadata so `enrich_security_finding()` can attach it.
 
-No scanner or client code changes are required — this is the main extensibility point.
+No scanner or client code changes are required; this is the main extensibility point.
 
 ### The `Finding` contract
 
@@ -98,8 +98,8 @@ is applied in one place.
 
 After analyzers run, the scanner applies two post-processing filters:
 
-1. **Severity filter** — drops findings below `min_severity` (CLI `--severity`, API `X-Min-Severity`).
-2. **Inline suppression** — `Scanner._is_ignored()` checks the finding's line (and the line above) for an ignore marker:
+1. **Severity filter**, drops findings below `min_severity` (CLI `--severity`, API `X-Min-Severity`).
+2. **Inline suppression**, `Scanner._is_ignored()` checks the finding's line (and the line above) for an ignore marker:
 
 ```python
 # vibecodeguide: ignore sql_query_construction
@@ -147,10 +147,10 @@ on privacy issues). It never runs detection locally.
 
 Two higher-level flows reuse the scanner to show *change*, not just state:
 
-- **Guidance demo** (`security/core/demo.py`, `POST /analyze/demo`) — runs the same
+- **Guidance demo** (`security/core/demo.py`, `POST /analyze/demo`): runs the same
   code twice, once with `enable_guidance=False` and once with `True`, then reports
   the delta (the privacy findings that guidance adds).
-- **Code-change impact** (`security/core/impact.py`, `POST /analyze/impact`) — scans
+- **Code-change impact** (`security/core/impact.py`, `POST /analyze/impact`): scans
   a `before` and `after` version of a file and classifies findings as **resolved**,
   **introduced**, or **unchanged**.
 
@@ -182,8 +182,8 @@ the full workflow.
 | Engine | `security/analyzers/security/` | Security analyzer + VG rule registry |
 | Engine | `privacy/analyzers/` | Privacy analyzer + PG rule registry |
 | Engine | `security/analyzers/smells/`, `performance/` | Auxiliary analyzers |
-| Rules | `security/rules/security/` | VG001–VG021 rule implementations + metadata |
-| Rules | `privacy/rules/` | PG001–PG008 rule implementations + metadata |
+| Rules | `security/rules/security/` | VG001-VG021 rule implementations + metadata |
+| Rules | `privacy/rules/` | PG001-PG008 rule implementations + metadata |
 | Model | `security/models/finding.py` | `Finding`, `ScanResult`, `Severity`, `Category` |
 | Output | `security/reporters/` | Text, JSON, and demo formatters |
 | Eval | `benchmarks/` | Datasets, runner, metrics, report schema |
