@@ -9,6 +9,7 @@ VibeCodeGuide helps teams review **vibe-coded** Python before it ships. It stati
 
 ## Table of Contents
 
+- [Quick Start](#quick-start)
 - [Problem Definition](#problem-definition)
 - [Objectives](#objectives)
 - [System Architecture](#system-architecture)
@@ -17,11 +18,30 @@ VibeCodeGuide helps teams review **vibe-coded** Python before it ships. It stati
 - [Usage](#usage)
 - [Implemented Rules](#implemented-rules)
 - [Example Output](#example-output)
+- [REST API](#rest-api)
 - [Project Structure](#project-structure)
 - [Running Tests](#running-tests)
 - [Benchmark Evaluation](#benchmark-evaluation)
 - [VS Code Extension](#vs-code-extension)
 - [Team](#team)
+- [License](#license)
+
+---
+
+## Quick Start
+
+```bash
+# 1. Install (Python 3.10+)
+pip install -e .
+
+# 2. Scan a file or directory
+vibecodeguide scan samples/security_showcase_vulnerable.py
+
+# 3. Get machine-readable output
+vibecodeguide scan samples/ --format json --output report.json
+```
+
+That's all you need for the command-line analyzer — the core engine has **no required third-party dependencies**. For the REST API and VS Code extension, see [REST API](#rest-api) and [VS Code Extension](#vs-code-extension).
 
 ---
 
@@ -70,6 +90,8 @@ VibeCodeGuide’s **Security and Privacy analyzer** is a static analysis pipelin
 ```
 
 The analyzer lives under `security/` in this repository (Python package). The VS Code extension and FastAPI service are thin clients that send editor or file content to that engine.
+
+> **Full architecture design:** see **[`docs/architecture.md`](docs/architecture.md)** for the layered design, analysis pipeline, rule plugin model, client flows, and module map (with diagrams).
 
 ---
 
@@ -229,6 +251,26 @@ Side-by-side comparison: `POST /analyze/demo`.
 
 Findings may include confidence, risk score, CWE, OWASP category, privacy strategy, impact, and remediation text.
 
+### Code quality and performance rules
+
+Alongside security and privacy, the scanner runs auxiliary code-quality and performance checks by default. These surface maintainability issues common in AI-generated code.
+
+| Rule ID | Title | Severity | Focus |
+| ------- | ----- | -------- | ----- |
+| `long_function` | Long Function | MEDIUM | Code smell |
+| `too_many_params` | Too Many Parameters | MEDIUM | Code smell |
+| `deep_nesting` | Deep Nesting | MEDIUM | Code smell |
+| `high_complexity` | High Cognitive Complexity | HIGH | Code smell |
+| `complex_comprehension` | Complex Comprehension | LOW | Code smell |
+| `unused_variable` | Unused Variable | LOW | Code smell |
+| `magic_number` | Magic Number | INFO | Code smell |
+| `missing_return_annotation` | Missing Return Annotation | INFO | Code smell |
+| `duplicate_code_block` | Duplicate Code Block | MEDIUM | Code smell |
+| `nested_loop` | Nested Loop | MEDIUM | Performance |
+| `string_concat_in_loop` | String Concatenation in Loop | MEDIUM | Performance |
+
+Use `--severity` to filter these out (for example, `--severity high` hides most code-quality findings), or suppress individual rules with an ignore comment.
+
 ### Suppressing intentional findings
 
 ```python
@@ -258,24 +300,125 @@ Scanned 4 file(s). Found 3 issue(s): 2 high, 1 medium, 0 low.
 
 ---
 
+## REST API
+
+The analyzer is also exposed as a FastAPI service (used by the VS Code extension and any HTTP client).
+
+### Run the API
+
+```bash
+pip install -r security/api/requirements.txt   # fastapi, uvicorn, pydantic
+pip install -e .
+uvicorn security.api.main:app --reload --port 8000
+```
+
+Interactive OpenAPI docs are served automatically at `http://localhost:8000/docs` (Swagger UI) and `http://localhost:8000/redoc`.
+
+### Endpoints
+
+| Method | Path | Description |
+| ------ | ---- | ----------- |
+| `GET`  | `/health` | Liveness check — returns `{"status": "ok"}`. |
+| `POST` | `/analyze` | Analyze a Python snippet and return findings. |
+| `POST` | `/analyze/demo` | Side-by-side baseline vs. guidance-enabled analysis. |
+| `POST` | `/analyze/impact` | Compare two versions of code (resolved vs. introduced findings). |
+
+### Request headers
+
+| Header | Values | Default | Applies to |
+| ------ | ------ | ------- | ---------- |
+| `X-Enable-Guidance` | `true` / `false` | `true` | `/analyze` |
+| `X-Min-Severity` | `INFO`, `LOW`, `MEDIUM`, `HIGH`, `CRITICAL` | none (all) | `/analyze`, `/analyze/demo`, `/analyze/impact` |
+
+### `POST /analyze`
+
+Send code either as raw text or as JSON `{"code": "..."}`. Maximum payload is 50,000 characters.
+
+```bash
+# Raw text body
+curl -X POST http://localhost:8000/analyze \
+  -H "Content-Type: text/plain" \
+  --data-binary $'import random\ntoken = random.random()\neval(input())'
+
+# JSON body, security-only (guidance off), HIGH and above
+curl -X POST http://localhost:8000/analyze \
+  -H "Content-Type: application/json" \
+  -H "X-Enable-Guidance: false" \
+  -H "X-Min-Severity: HIGH" \
+  -d '{"code": "password = \"hunter2\""}'
+```
+
+Response (`AnalyzeResponse`):
+
+```json
+{
+  "ok": true,
+  "error_type": null,
+  "error_message": null,
+  "scanned_files": 1,
+  "findings": [
+    {
+      "rule_id": "VG001",
+      "title": "Use of eval()",
+      "message": "Use of eval() is insecure and may allow arbitrary code execution.",
+      "severity": "CRITICAL",
+      "file": "<code>",
+      "line": 3,
+      "category": "SECURITY",
+      "cwe": "CWE-95",
+      "owasp": "A03:2021-Injection",
+      "privacy_strategy": null,
+      "suggestion": "Avoid eval(); parse or validate input explicitly.",
+      "confidence": "HIGH",
+      "risk_score": 90
+    }
+  ],
+  "parse_errors": [],
+  "summary": {
+    "by_severity": {"CRITICAL": 1},
+    "by_category": {"SECURITY": 1}
+  },
+  "guidance_enabled": false
+}
+```
+
+### `POST /analyze/impact`
+
+Compares a `before` and `after` version of the same file. Body must be JSON:
+
+```bash
+curl -X POST http://localhost:8000/analyze/impact \
+  -H "Content-Type: application/json" \
+  -d '{"before": "print(email)", "after": "logging.info(\"login\")", "filename": "auth.py"}'
+```
+
+The response includes `resolved_findings`, `introduced_findings`, and per-category counts before/after the change.
+
+---
+
 ## Project Structure
 
 ```
 privacy-patterns-llm-code-generate/
-├── security/              Security, smell, and performance analyzer core
-│   ├── api/               FastAPI service for editor/HTTP clients
-│   ├── cli/               vibecodeguide CLI
-│   ├── core/              Scanner orchestration
-│   ├── rules/security/    Rule implementations VG001–VG021
-│   ├── models/            Finding and scan result types
-│   └── reporters/         Text and JSON formatters
-├── privacy/               Privacy rule pack (PG001–PG008, Hoepman strategies)
-│   ├── analyzers/         PrivacyAnalyzer
-│   └── rules/             Privacy rule implementations
-├── vscode-extension/      VibeCodeGuide VS Code / Cursor extension
-├── samples/               Vulnerable examples for demos and tests
-├── benchmarks/            Labeled samples for evaluation
-└── tests/
+├── security/                  Security analyzer core (Python package)
+│   ├── api/                   FastAPI service for editor/HTTP clients
+│   ├── cli/                   vibecodeguide CLI entry point
+│   ├── core/                  Scanner orchestration, demo & impact logic
+│   ├── analyzers/             Security, smell, and performance analyzers
+│   ├── rules/security/        Rule implementations VG001–VG021
+│   ├── models/                Finding and scan-result types
+│   └── reporters/             Text, JSON, and demo formatters
+├── privacy/                   Privacy rule pack (PG001–PG008, Hoepman strategies)
+│   ├── analyzers/             PrivacyAnalyzer
+│   └── rules/                 Privacy rule implementations
+├── vscode-extension/          VibeCodeGuide VS Code / Cursor extension
+├── samples/                   Vulnerable examples for demos and tests
+├── benchmarks/                Evaluation harness (internal, OWASP, RealVuln)
+│   ├── dataset.py             Internal labeled samples (ground truth)
+│   ├── report.schema.json     JSON report schema (v1)
+│   └── reports/               Generated benchmark reports (*-latest.json)
+├── tests/                     pytest suite
+└── pyproject.toml             Packaging and console-script entry points
 ```
 
 ---
@@ -347,13 +490,7 @@ Detailed iteration history: `docs/internal/benchmark-iterations.md` (local, giti
 
 The `vscode-extension/` folder provides **VibeCodeGuide** in the editor: analyze the active Python file or selection against the analyzer API.
 
-### Start the API
-
-```bash
-pip install -r security/api/requirements.txt
-pip install -e .
-uvicorn security.api.main:app --reload --port 8000
-```
+> The extension talks to the [REST API](#rest-api). Start it first (`uvicorn security.api.main:app --reload --port 8000`) and keep it running on port 8000.
 
 ### Develop the extension
 
@@ -427,3 +564,11 @@ Keep the API running on port 8000 while using the extension. Use **VibeCodeGuide
 | --------------------- | ----------------------------------- |
 | Haylemicheal Mekonnen | Paris Lodron University of Salzburg |
 | Daniel Wassie         | Paris Lodron University of Salzburg |
+
+Developed for **Privacy Engineering 2026**, Paris Lodron University of Salzburg.
+
+---
+
+## License
+
+Released under the **MIT License** (see `pyproject.toml`). The OWASP Benchmark for Python and RealVuln datasets are governed by their respective upstream licenses.
